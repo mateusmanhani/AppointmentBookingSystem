@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: user-service
+  datasource:
+    url: jdbc:mysql://localhost:3306/user_service_db
+    username: root
+    password: your_password
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQL8Dialect
+  threads:
+    virtual:
+      enabled: true  # Enable Java 21 virtual threads
+
+server:
+  port: 8081
+
+logging:
+  level:
+    com.barbershop.user: DEBUG

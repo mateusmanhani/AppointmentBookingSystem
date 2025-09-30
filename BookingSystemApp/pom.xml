@@ -13,6 +13,12 @@
     <name>Barbershop Booking System</name>
     <description>Modern microservices barbershop booking system with Java 21</description>
 
+    <!-- List of modules  -->
+    <modules>
+        <module>user-service</module>
+        <!-- Will add other services here later -->
+    </modules>
+
     <properties>
         <!-- Java 21 Configuration -->
         <maven.compiler.source>21</maven.compiler.source>
