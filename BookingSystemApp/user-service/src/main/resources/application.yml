@@ -3,8 +3,8 @@ spring:
     name: user-service
   datasource:
     url: jdbc:mysql://localhost:3306/user_service_db
-    username: root
-    password: your_password
+    username: barbershop_user
+    password: barbershop_pass123
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
@@ -23,4 +23,4 @@ server:
 
 logging:
   level:
-    com.barbershop.user: DEBUG
+    com.barbershop.user_service: DEBUG
