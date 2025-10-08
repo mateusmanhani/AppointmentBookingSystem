@@ -12,9 +12,7 @@ public record UserResponseDto(
         String firstName,
         String lastName,
         String phone,
-        String address,
         Boolean isActive,
-        Boolean emailVerified,
 
         @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
         LocalDateTime createdAt,

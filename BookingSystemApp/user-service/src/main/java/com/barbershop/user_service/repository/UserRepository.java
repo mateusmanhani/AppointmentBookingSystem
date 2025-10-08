@@ -51,7 +51,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
             "LOWER(CONCAT(u.firstName, ' ', u.lastName)) LIKE LOWER(CONCAT('%', :searchTerm, '%')) " +
             "AND u.isActive = true")
     List<User> findByNameContainingIgnoreCase(@Param("searchTerm") String searchTerm);
-    
+
 
 
 }
