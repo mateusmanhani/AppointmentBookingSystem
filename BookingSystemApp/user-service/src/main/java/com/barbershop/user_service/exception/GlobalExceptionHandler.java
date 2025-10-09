@@ -1,5 +1,6 @@
 package com.barbershop.user_service.exception;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,7 @@ import java.util.Map;
  * Provides consistent error responses across all endpoints
  */
 @RestControllerAdvice
+@Hidden
 @Slf4j
 public class GlobalExceptionHandler {
     /**

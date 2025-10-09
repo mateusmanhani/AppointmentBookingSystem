@@ -1,6 +1,7 @@
 package com.barbershop.user_service.dto;
 
 import com.barbershop.user_service.entity.UserRole;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.*;
 
 public record UserRegistrationDto(
@@ -12,7 +13,7 @@ public record UserRegistrationDto(
         @NotBlank(message = "Password is required")
         @Size(min = 8, max = 50, message = "Password must be between 8 and 50 characters")
         @Pattern(
-                regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=]).*$",
+                regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!*]).*$",
                 message = "Password must contain at least one digit, lowercase letter, uppercase letter, and special character"
         )
         String password,
@@ -32,24 +33,22 @@ public record UserRegistrationDto(
                 regexp = "^[+]?[0-9]{10,15}$",
                 message = "Please provide a valid phone number (10-15 digits)"
         )
-        String phone,
-
-        @Size(max = 500, message = "Address must not exceed 500 characters")
-        String address
+        String phone
 
 ) {
+    @JsonIgnore
     public boolean isValidForRole() {
         return switch (role) {
             case CUSTOMER -> phone != null && !phone.isBlank();
             case STAFF, SHOP_OWNER ->
-                    phone != null && !phone.isBlank() &&
-                            address != null && !address.isBlank();
+                    phone != null && !phone.isBlank();
         };
     }
 
     /**
      * Generate display name for user
      */
+    @JsonIgnore
     public String getFullName() {
         return String.format("%s %s", firstName, lastName);
     }

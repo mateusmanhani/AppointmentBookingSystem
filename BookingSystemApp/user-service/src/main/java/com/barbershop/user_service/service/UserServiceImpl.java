@@ -41,6 +41,7 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
+    @Transactional
     public UserResponseDto registerUser(UserRegistrationDto registrationDto) {
         log.info("Attempting to register user with email: {}", registrationDto.email());
 
@@ -107,7 +108,7 @@ public class UserServiceImpl implements UserService{
         Optional<User> userOptional = userRepository.findByEmail(email.toLowerCase());
 
         if (userOptional.isEmpty()){
-            throw new UserNotFoundException("User not found with email: {}" + email);
+            throw new UserNotFoundException("User not found with email: " + email);
         }
 
         return userMapper.toResponseDto(userOptional.get());
@@ -163,7 +164,7 @@ public class UserServiceImpl implements UserService{
 
     @Override
     public Page<UserResponseDto> getUsersByRole(UserRole role, Pageable pageable) {
-        Page<User> users = userRepository.findAll(pageable);
+        Page<User> users = userRepository.findByRole(role,pageable);
         return users.map(userMapper::toResponseDto);
     }
 

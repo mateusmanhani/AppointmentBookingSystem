@@ -2,6 +2,8 @@ package com.barbershop.user_service.repository;
 
 import com.barbershop.user_service.entity.User;
 import com.barbershop.user_service.entity.UserRole;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -51,6 +53,14 @@ public interface UserRepository extends JpaRepository<User, Long> {
             "LOWER(CONCAT(u.firstName, ' ', u.lastName)) LIKE LOWER(CONCAT('%', :searchTerm, '%')) " +
             "AND u.isActive = true")
     List<User> findByNameContainingIgnoreCase(@Param("searchTerm") String searchTerm);
+
+    /**
+     * Find users by role in a paginated format
+     * @param role
+     * @param pageable
+     * @return
+     */
+    Page<User> findByRole(UserRole role, Pageable pageable);
 
 
 

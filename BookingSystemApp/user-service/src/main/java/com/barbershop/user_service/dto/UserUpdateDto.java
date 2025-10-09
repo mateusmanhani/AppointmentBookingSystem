@@ -14,16 +14,13 @@ public record UserUpdateDto(
                 regexp = "^[+]?[0-9]{10,15}$",
                 message = "Please provide a valid phone number (10-15 digits)"
         )
-        String phone,
-
-        @Size(max = 500, message = "Address must not exceed 500 characters")
-        String address
+        String phone
 ) {
     /**
      * Check if at least one field is provided for update
      */
     public boolean hasValidFields() {
         return firstName != null || lastName != null ||
-                phone != null || address != null;
+                phone != null;
     }
 }
