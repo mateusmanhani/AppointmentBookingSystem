@@ -29,6 +29,12 @@ public interface UserService {
     JwtAuthResponseDto authenticateAndGenerateTokens(LoginRequestDto loginDto);
 
     /**
+     * Refresh tokens using refresh token
+     */
+    JwtAuthResponseDto refreshUserTokens(RefreshTokenRequestDto refreshRequest);
+
+
+    /**
      * Get user by ID
      */
     UserResponseDto getUserById(Long id);

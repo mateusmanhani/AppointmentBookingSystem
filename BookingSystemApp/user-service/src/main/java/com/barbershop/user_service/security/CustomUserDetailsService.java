@@ -2,23 +2,22 @@ package com.barbershop.user_service.security;
 
 import com.barbershop.user_service.entity.User;
 import com.barbershop.user_service.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 
+@Service
+@RequiredArgsConstructor
+@Slf4j
 public class CustomUserDetailsService  implements UserDetailsService {
 
-    @Autowired
     private final UserRepository userRepository;
-
-    public CustomUserDetailsService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
-
     /**
      * This method is called by Spring Security to load user information
      * It converts our Database User entity into Spring Security's UserDetails format

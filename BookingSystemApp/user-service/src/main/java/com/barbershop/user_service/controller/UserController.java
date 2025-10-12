@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -76,6 +77,24 @@ public class UserController {
 
         // Return success response with tokens
         ApiResponse<JwtAuthResponseDto> response = ApiResponse.success("Authentication Successfull", authResponse);
+
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Refresh JWT tokens using refresh token
+     * POST /api/users/auth/refresh
+     */
+    @PostMapping(value = "/auth/refresh", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ApiResponse<JwtAuthResponseDto>> refreshToken(
+            @Valid @RequestBody RefreshTokenRequestDto refreshRequest) {
+
+        log.info("Token refresh request received");
+
+        JwtAuthResponseDto authResponse = userService.refreshUserTokens(refreshRequest);
+
+        ApiResponse<JwtAuthResponseDto> response = ApiResponse.success(
+                "Token refreshed successfully", authResponse);
 
         return ResponseEntity.ok(response);
     }

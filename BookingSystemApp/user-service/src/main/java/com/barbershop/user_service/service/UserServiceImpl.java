@@ -139,6 +139,41 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
+    public JwtAuthResponseDto refreshUserTokens(RefreshTokenRequestDto refreshRequest) {
+        log.info("Processing token refresh request");
+
+        try {
+            // Extract username from refresh token
+            String username = jwtService.extractUsername(refreshRequest.refreshToken());
+
+            // Load user details
+            UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
+
+            // Validate refresh token
+            if (jwtService.isTokenValid(refreshRequest.refreshToken(), userDetails)) {
+
+                // Get user from database for response
+                User user = userRepository.findActiveUserByEmail(username.toLowerCase())
+                        .orElseThrow(() -> new InvalidCredentialsException("User not found"));
+
+                // Generate new tokens
+                String newAccessToken = jwtService.generateToken(userDetails, user.getId(), user.getRole().name());
+                String newRefreshToken = jwtService.generateRefreshToken(userDetails);
+
+                UserResponseDto userResponse = userMapper.toResponseDto(user);
+
+                return JwtAuthResponseDto.create(
+                        newAccessToken, newRefreshToken, jwtService.getExpirationTime(), userResponse);
+            } else {
+                throw new InvalidCredentialsException("Invalid refresh token");
+            }
+        } catch (Exception e) {
+            log.error("Token refresh failed: {}", e.getMessage());
+            throw new InvalidCredentialsException("Invalid refresh token");
+        }
+    }
+
+    @Override
     @Transactional
     public UserResponseDto getUserById(Long id) {
         User user = findUserById(id);
