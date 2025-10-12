@@ -16,7 +16,7 @@
     <!-- List of modules  -->
     <modules>
         <module>user-service</module>
-        <!-- Will add other services here later -->
+        <module>FrontendApplication</module>
     </modules>
 
     <properties>
