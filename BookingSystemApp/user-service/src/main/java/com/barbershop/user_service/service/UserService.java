@@ -94,5 +94,15 @@ public interface UserService {
      * @return updated user profile
      */
     UserResponseDto updateSelfProfile(String email, @Valid UserUpdateDto userUpdateDto);
+
+    /**
+     * Initiate forgot password
+     */
+    void initiateForgotPassword(ForgotPasswordDto forgotPasswordDto);
+
+    /**
+     * Simple password reset - for development/testing
+     */
+    void resetPassword(ResetPasswordDto resetPasswordDto);
 }
 

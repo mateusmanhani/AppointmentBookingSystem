@@ -133,6 +133,39 @@ public class UserController {
     }
 
     /**
+     * Step 1: Request password reset token
+     * POST /api/users/forgot-password
+     */
+    @PostMapping("/forgot-password")
+    public ResponseEntity<String> forgotPassword(
+            @Valid @RequestBody ForgotPasswordDto forgotPasswordDto) {
+
+        log.info("Password reset request received");
+
+        userService.initiateForgotPassword(forgotPasswordDto);
+
+        return ResponseEntity.ok(
+                "If the email exists in our system, you will receive password reset instructions");
+    }
+
+    /**
+     * Step 2: Reset password using token
+     * POST /api/users/reset-password
+     */
+    @PostMapping("/reset-password")
+    public ResponseEntity<String> resetPassword(
+            @Valid @RequestBody ResetPasswordDto resetDto) {
+
+        log.info("Password reset with token requested");
+
+        userService.resetPassword(resetDto);
+
+        return ResponseEntity.ok("Password reset successfully. You can now login with your new password.");
+    }
+
+
+
+    /**
      * Deactivate user account
      * DELETE /api/users/{id}
      */

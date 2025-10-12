@@ -1,17 +1,20 @@
 package com.barbershop.user_service.service;
 
 import com.barbershop.user_service.dto.*;
+import com.barbershop.user_service.entity.PasswordResetToken;
 import com.barbershop.user_service.entity.User;
 import com.barbershop.user_service.entity.UserRole;
 import com.barbershop.user_service.exception.InvalidCredentialsException;
 import com.barbershop.user_service.exception.UserAlreadyExistsException;
 import com.barbershop.user_service.exception.UserNotFoundException;
 import com.barbershop.user_service.mapper.UserMapper;
+import com.barbershop.user_service.repository.TokenRepository;
 import com.barbershop.user_service.repository.UserRepository;
 import com.barbershop.user_service.security.CustomUserDetailsService;
 import com.barbershop.user_service.security.JwtService;
 import jakarta.transaction.Transactional;
 import jakarta.validation.ValidationException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -23,9 +26,11 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 @Slf4j
 public class UserServiceImpl implements UserService{
 
@@ -34,19 +39,8 @@ public class UserServiceImpl implements UserService{
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final CustomUserDetailsService customUserDetailsService;
+    private final TokenRepository tokenRepository;
 
-    @Autowired
-    public UserServiceImpl(UserRepository userRepository,
-                           UserMapper userMapper,
-                           PasswordEncoder passwordEncoder,
-                           JwtService jwtService,
-                           CustomUserDetailsService customUserDetailsService){
-        this.userRepository = userRepository;
-        this.userMapper = userMapper;
-        this.passwordEncoder = passwordEncoder;
-        this.jwtService = jwtService;
-        this.customUserDetailsService = customUserDetailsService;
-    }
 
     @Override
     @Transactional
@@ -331,6 +325,63 @@ public class UserServiceImpl implements UserService{
         if (missingFields != null) {
             throw new IllegalArgumentException(missingFields);
         }
+    }
+
+    @Override
+    @Transactional
+    public void initiateForgotPassword(ForgotPasswordDto forgotPasswordDto) {
+        log.info("Password reset request for email: {}", forgotPasswordDto.email());
+
+        Optional<User> userOptional = userRepository.findActiveUserByEmail(forgotPasswordDto.email().toLowerCase());
+
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+
+            // Delete any existing tokens for this user
+            tokenRepository.deleteByUserId(user.getId());
+
+            // Generate secure random token
+            String token = UUID.randomUUID().toString() + UUID.randomUUID().toString(); // 72 chars
+
+            // Save token to database
+            PasswordResetToken resetToken = new PasswordResetToken(token, user.getId());
+            tokenRepository.save(resetToken);
+
+            log.info("Password reset token generated for user ID: {} - Token: {}", user.getId(), token);
+            //TODO:  In production: emailService.sendPasswordResetEmail(user.getEmail(), token);
+        }
+
+        // TODO: Always return success (security best practice)
+    }
+
+
+    @Override
+    @Transactional
+    public void resetPassword(ResetPasswordDto resetPasswordDto) {
+        log.info("Password reset with token requested");
+
+        // Find and validate token
+        PasswordResetToken resetToken = tokenRepository.findByToken(resetPasswordDto.token())
+                .orElseThrow(() -> new InvalidCredentialsException("Invalid or expired reset token"));
+
+        // Check if token is expired
+        if (resetToken.getExpiryDate().isBefore(LocalDateTime.now())) {
+            tokenRepository.deleteById(resetToken.getId());
+            throw new InvalidCredentialsException("Reset token has expired. Please request a new one.");
+        }
+
+        // Get user and update password
+        User user = userRepository.findById(resetToken.getUserId())
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        user.setPassword(passwordEncoder.encode(resetPasswordDto.newPassword()));
+        user.setUpdatedAt(LocalDateTime.now());
+        userRepository.save(user);
+
+        // Delete used token (one-time use)
+        tokenRepository.deleteByUserId(user.getId());
+
+        log.info("Password successfully reset for user ID: {}", user.getId());
     }
 
     //  =========== Helper Methods ===========

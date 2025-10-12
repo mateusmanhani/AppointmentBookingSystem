@@ -33,7 +33,9 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/users/register",
                                 "/api/users/auth/login",
-                                "/api/users/login").permitAll()
+                                "/api/users/login",
+                                "/api/users/forgot-password",
+                                "/api/users/reset-password").permitAll()
 
                         .requestMatchers(
                                 "/v3/api-docs/**",
