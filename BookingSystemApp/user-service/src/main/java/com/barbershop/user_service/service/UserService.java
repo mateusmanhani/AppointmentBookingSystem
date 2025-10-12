@@ -2,6 +2,7 @@ package com.barbershop.user_service.service;
 
 import com.barbershop.user_service.dto.*;
 import com.barbershop.user_service.entity.UserRole;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -85,5 +86,13 @@ public interface UserService {
      * Check if user exists by email
      */
     boolean existsByEmail(String email);
+
+    /**
+     *  Update user's own profile using authenticated email
+     * @param email The authenticated User email
+     * @param userUpdateDto the profile update data
+     * @return updated user profile
+     */
+    UserResponseDto updateSelfProfile(String email, @Valid UserUpdateDto userUpdateDto);
 }
 

@@ -11,6 +11,7 @@ import com.barbershop.user_service.repository.UserRepository;
 import com.barbershop.user_service.security.CustomUserDetailsService;
 import com.barbershop.user_service.security.JwtService;
 import jakarta.transaction.Transactional;
+import jakarta.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -19,6 +20,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -213,6 +215,32 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
+    @Transactional
+    public UserResponseDto updateSelfProfile(String email, UserUpdateDto userUpdateDto) {
+        log.info("Self-profile update request for user email: {}", email);
+
+        // Find user by authenticated email
+        User existingUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> {
+                    log.error("User not found with email: {}", email);
+                    return new UserNotFoundException("User not found with email: " + email);
+                });
+
+        log.info("Found user for self-update: ID={}, Email={}", existingUser.getId(), existingUser.getEmail());
+
+        // Validate and update allowed fields only
+        updateAllowedSelfProfileFields(existingUser, userUpdateDto);
+
+        // Save updated user
+        User updatedUser = userRepository.save(existingUser);
+
+        log.info("Successfully updated self-profile for user: {}", email);
+
+        // Convert to response DTO
+        return userMapper.toResponseDto(updatedUser);
+    }
+
+    @Override
     public void deactivateUser(Long id) {
         log.info("Deactivating user with ID: {}", id);
 
@@ -302,6 +330,66 @@ public class UserServiceImpl implements UserService{
 
         if (missingFields != null) {
             throw new IllegalArgumentException(missingFields);
+        }
+    }
+
+    //  =========== Helper Methods ===========
+    /**
+     * Helper method to update only allowed self-profile fields
+     * Security: Users can only update specific fields, not sensitive data
+     */
+    private void updateAllowedSelfProfileFields(User existingUser, UserUpdateDto updateDto) {
+        log.debug("Updating allowed self-profile fields for user ID: {}", existingUser.getId());
+
+        // Allowed fields for self-update
+        if (updateDto.firstName() != null && !updateDto.firstName().trim().isEmpty()) {
+            validateName(updateDto.firstName(), "First name");
+            existingUser.setFirstName(updateDto.firstName().trim());
+            log.debug("Updated firstName to: {}", updateDto.firstName());
+        }
+
+        if (updateDto.lastName() != null && !updateDto.lastName().trim().isEmpty()) {
+            validateName(updateDto.lastName(), "Last name");
+            existingUser.setLastName(updateDto.lastName().trim());
+            log.debug("Updated lastName to: {}", updateDto.lastName());
+        }
+
+        if (updateDto.phone() != null && !updateDto.phone().trim().isEmpty()) {
+            validatePhoneNumber(updateDto.phone());
+            existingUser.setPhone(updateDto.phone().trim());
+            log.debug("Updated phone to: {}", updateDto.phone());
+        }
+
+        // Update timestamp
+        existingUser.setUpdatedAt(LocalDateTime.now());
+    }
+
+    /**
+     * Validate name fields (first name, last name)
+     */
+    private void validateName(String name, String fieldName) {
+        if (name == null || name.trim().isEmpty()) {
+            throw new ValidationException(fieldName + " cannot be empty");
+        }
+        if (name.length() < 2 || name.length() > 50) {
+            throw new ValidationException(fieldName + " must be between 2 and 50 characters");
+        }
+        if (!name.matches("^[a-zA-Z\\s'-]+$")) {
+            throw new ValidationException(fieldName + " can only contain letters, spaces, hyphens, and apostrophes");
+        }
+    }
+
+    /**
+     * Validate phone number format
+     */
+    private void validatePhoneNumber(String phone) {
+        if (phone == null || phone.trim().isEmpty()) {
+            return; // Phone is optional
+        }
+
+        String cleanPhone = phone.replaceAll("[\\s()-]", "");
+        if (!cleanPhone.matches("^\\+?[1-9]\\d{7,14}$")) {
+            throw new ValidationException("Invalid phone number format. Use international format (e.g., +1234567890)");
         }
     }
 }

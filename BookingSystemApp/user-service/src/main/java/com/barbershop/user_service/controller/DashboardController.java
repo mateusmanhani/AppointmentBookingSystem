@@ -1,9 +1,7 @@
 package com.barbershop.user_service.controller;
 
-import com.barbershop.user_service.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -24,11 +22,8 @@ public class DashboardController {
      */
     @GetMapping("/customer")
     @PreAuthorize("hasRole('CUSTOMER')")
-    public ResponseEntity<ApiResponse<String>> getCustomerDashBoard (Authentication auth){
-        return ResponseEntity.ok(ApiResponse.success(
-                "Customer Dashboard access granted",
-                "Welcome to your customer dashboard, " + auth.getName() + "!"
-        ));
+    public ResponseEntity<String> getCustomerDashBoard (Authentication auth){
+        return ResponseEntity.ok("Welcome to your customer dashboard, " + auth.getName() + "!");
     }
 
     /**
@@ -36,11 +31,8 @@ public class DashboardController {
      */
     @GetMapping("/barber")
     @PreAuthorize("hasRole('STAFF')")
-    public ResponseEntity<ApiResponse<String>> getBarberDashboard(Authentication auth) {
-        return ResponseEntity.ok(ApiResponse.success(
-                "Barber dashboard access granted",
-                "Welcome to your barber dashboard, " + auth.getName() + "!"
-        ));
+    public ResponseEntity<String> getBarberDashboard(Authentication auth) {
+        return ResponseEntity.ok("Welcome to your barber dashboard, " + auth.getName() + "!");
     }
 
     /**
@@ -48,10 +40,7 @@ public class DashboardController {
      */
     @GetMapping("/owner")
     @PreAuthorize("hasRole('SHOP_OWNER')")
-    public ResponseEntity<ApiResponse<String>> getOwnerDashboard(Authentication auth) {
-        return ResponseEntity.ok(ApiResponse.success(
-                "Owner dashboard access granted",
-                "Welcome to your shop owner dashboard, " + auth.getName() + "!"
-        ));
+    public ResponseEntity<String> getOwnerDashboard(Authentication auth) {
+        return ResponseEntity.ok("Welcome to your shop owner dashboard, " + auth.getName() + "!");
     }
 }

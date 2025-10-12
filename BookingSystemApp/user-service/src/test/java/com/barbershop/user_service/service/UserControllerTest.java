@@ -1,14 +1,10 @@
 package com.barbershop.user_service.service;
 
 import com.barbershop.user_service.controller.UserController;
-import com.barbershop.user_service.dto.ApiResponse;
 import com.barbershop.user_service.dto.UserRegistrationDto;
 import com.barbershop.user_service.dto.UserResponseDto;
 import com.barbershop.user_service.entity.UserRole;
-import com.barbershop.user_service.exception.UserAlreadyExistsException;
-import com.barbershop.user_service.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;

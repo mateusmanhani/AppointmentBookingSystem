@@ -12,10 +12,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
 
 /**
  * REST Controller for User management operations
@@ -38,16 +39,12 @@ public class UserController {
      * POST /api/users/register
      */
     @PostMapping("/register")
-    public ResponseEntity<ApiResponse<UserResponseDto>> registerUser(
+    public ResponseEntity<UserResponseDto> registerUser(
             @Valid @RequestBody UserRegistrationDto registrationDto
-            ){
+    ){
         log.info("Registration request received for email: {}", registrationDto.email());
-
         UserResponseDto user = userService.registerUser(registrationDto);
-
-        ApiResponse<UserResponseDto> response = ApiResponse.success("User registered successfully", user);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(user);
     }
 
     /**
@@ -55,14 +52,10 @@ public class UserController {
      * POST /api/users/login
      */
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<UserResponseDto>> authenticateUser(@Valid@RequestBody LoginRequestDto loginDto){
+    public ResponseEntity<UserResponseDto> authenticateUser(@Valid@RequestBody LoginRequestDto loginDto){
         log.info("Login request received for email: {}", loginDto.email());
-
         UserResponseDto user = userService.authenticateUser(loginDto);
-
-        ApiResponse<UserResponseDto> response = ApiResponse.success("Login successful", user);
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(user);
     }
 
     /**
@@ -70,15 +63,11 @@ public class UserController {
      * POST /api/users/auth/login
      */
     @PostMapping("/auth/login")
-    public ResponseEntity<ApiResponse<JwtAuthResponseDto>> authenticateWithJWT (@Valid@RequestBody LoginRequestDto loginDto){
+    public ResponseEntity<JwtAuthResponseDto> authenticateWithJWT (@Valid@RequestBody LoginRequestDto loginDto){
         log.info("JWT authentication request received for email: {}", loginDto.email());
-
         JwtAuthResponseDto authResponse = userService.authenticateAndGenerateTokens(loginDto);
-
         // Return success response with tokens
-        ApiResponse<JwtAuthResponseDto> response = ApiResponse.success("Authentication Successfull", authResponse);
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(authResponse);
     }
 
     /**
@@ -86,17 +75,11 @@ public class UserController {
      * POST /api/users/auth/refresh
      */
     @PostMapping(value = "/auth/refresh", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ApiResponse<JwtAuthResponseDto>> refreshToken(
+    public ResponseEntity<JwtAuthResponseDto> refreshToken(
             @Valid @RequestBody RefreshTokenRequestDto refreshRequest) {
-
         log.info("Token refresh request received");
-
         JwtAuthResponseDto authResponse = userService.refreshUserTokens(refreshRequest);
-
-        ApiResponse<JwtAuthResponseDto> response = ApiResponse.success(
-                "Token refreshed successfully", authResponse);
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(authResponse);
     }
 
     /**
@@ -104,14 +87,10 @@ public class UserController {
      * GET /api/users/{id}
      */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<UserResponseDto>> getUserById(@PathVariable Long id){
+    public ResponseEntity<UserResponseDto> getUserById(@PathVariable Long id){
         log.info("Get user request for ID: {}", id);
-
         UserResponseDto user = userService.getUserById(id);
-
-        ApiResponse<UserResponseDto> response = ApiResponse.success("User retrieved successfully", user);
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(user);
     }
 
     /**
@@ -119,32 +98,38 @@ public class UserController {
      * GET /api/users/by-email?email=user@example.com
      */
     @GetMapping("/by-email")
-    public ResponseEntity<ApiResponse<UserResponseDto>> getUserByEmail(@RequestParam("email") String email){
+    public ResponseEntity<UserResponseDto> getUserByEmail(@RequestParam("email") String email){
         log.info("Get user request for email: {}", email);
-
         UserResponseDto user = userService.getUserByEmail(email);
-
-        ApiResponse<UserResponseDto> response = ApiResponse.success("User retrieved successfully", user);
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(user);
     }
 
     /**
-     * Update User profile
+     * Update User profile - requires admin role
      * PUT /api/users/{id}
      */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<UserResponseDto>> updateUser(
+    public ResponseEntity<UserResponseDto> updateUser(
             @PathVariable long id,
             @Valid@RequestBody UserUpdateDto updateDto){
-
         log.info("Update user request for ID: {}", id);
-
         UserResponseDto user = userService.updateUser(id,updateDto);
+        return ResponseEntity.ok(user);
+    }
 
-        ApiResponse<UserResponseDto> response = ApiResponse.success("User updated successfully", user);
+    /**
+     * Update Self Profile - logged-in user
+     * PUT /api/users/profile // Extracts user from JWT token
+     */
+    @PutMapping("/profile")
+    @PreAuthorize("hasRole('CUSTOMER') or hasRole('BARBER')")
+    public ResponseEntity<UserResponseDto> updateSelfProfile(
+            @RequestBody @Valid UserUpdateDto userUpdateDto,
+            Authentication authentication) {
 
-        return ResponseEntity.ok(response);
+        String email = authentication.getName();
+        UserResponseDto updated = userService.updateSelfProfile(email, userUpdateDto);
+        return ResponseEntity.ok(updated);
     }
 
     /**
@@ -152,15 +137,10 @@ public class UserController {
      * DELETE /api/users/{id}
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> deactivateUser(@PathVariable Long id) {
-
+    public ResponseEntity<Void> deactivateUser(@PathVariable Long id) {
         log.info("Deactivate user request for ID: {}", id);
-
         userService.deactivateUser(id);
-
-        ApiResponse<Void> response = ApiResponse.success("User deactivated successfully");
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.noContent().build();
     }
 
     /**
@@ -168,15 +148,10 @@ public class UserController {
      * POST /api/users/{id}/reactivate
      */
     @PostMapping("/{id}/reactivate")
-    public ResponseEntity<ApiResponse<Void>> reactivateUser(@PathVariable Long id) {
-
+    public ResponseEntity<Void> reactivateUser(@PathVariable Long id) {
         log.info("Reactivate user request for ID: {}", id);
-
         userService.reactivateUser(id);
-
-        ApiResponse<Void> response = ApiResponse.success("User reactivated successfully");
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok().build();
     }
 
     // ================== SEARCH & LISTING ==================
@@ -186,19 +161,13 @@ public class UserController {
      * GET /api/users?page=0&size=10
      */
     @GetMapping
-    public ResponseEntity<ApiResponse<Page<UserResponseDto>>> getAllUsers(
+    public ResponseEntity<Page<UserResponseDto>> getAllUsers(
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "10") int size){
-
         log.info("Get all users requests - page: {}, size: {}", page,size);
-
         Pageable pageable = PageRequest.of(page,size);
         Page<UserResponseDto> users = userService.getAllUsers(pageable);
-
-        ApiResponse<Page<UserResponseDto>> response = ApiResponse.success(
-                "Users retireved successfully", users);
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(users);
     }
 
     /**
@@ -206,41 +175,27 @@ public class UserController {
      * GET /api/users/by-role/CUSTOMER?page=0&size=10
      */
     @GetMapping("/by-role/{role}")
-    public ResponseEntity<ApiResponse<Page<UserResponseDto>>> getUsersByRole(
+    public ResponseEntity<Page<UserResponseDto>> getUsersByRole(
             @PathVariable("role") UserRole role,
             @RequestParam(value = "page",defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "10") int size) {
-
         log.info("Get users by role request - role: {}, page: {}, size: {}", role, page, size);
-
         Pageable pageable = PageRequest.of(page, size);
         Page<UserResponseDto> users = userService.getUsersByRole(role, pageable);
-
         log.info("Found {} users for role: {}", users.getTotalElements(), role);
-
-        ApiResponse<Page<UserResponseDto>> response = ApiResponse.success(
-                "Users retrieved successfully", users);
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(users);
     }
-
 
     /**
      * Search users by name
      * GET /api/users/search?name=john
      */
     @GetMapping("/search")
-    public ResponseEntity<ApiResponse<List<UserResponseDto>>> searchUsers(
+    public ResponseEntity<List<UserResponseDto>> searchUsers(
             @RequestParam("name") String name) {
-
         log.info("Search users request for name: {}", name);
-
         List<UserResponseDto> users = userService.searchUsersByName(name);
-
-        ApiResponse<List<UserResponseDto>> response = ApiResponse.success(
-                "Users retrieved successfully", users);
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(users);
     }
 
     /**
@@ -248,16 +203,10 @@ public class UserController {
      * GET /api/users/staff
      */
     @GetMapping("/staff")
-    public ResponseEntity<ApiResponse<List<UserResponseDto>>> getStaffMembers() {
-
+    public ResponseEntity<List<UserResponseDto>> getStaffMembers() {
         log.info("Get staff members request");
-
         List<UserResponseDto> staff = userService.getStaffMembers();
-
-        ApiResponse<List<UserResponseDto>> response = ApiResponse.success(
-                "Staff members retrieved successfully", staff);
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(staff);
     }
 
     /**
@@ -265,16 +214,10 @@ public class UserController {
      * GET /api/users/exists?email=user@example.com
      */
     @GetMapping("/exists")
-    public ResponseEntity<ApiResponse<Boolean>> checkEmailExists(
+    public ResponseEntity<Boolean> checkEmailExists(
             @RequestParam("email") String email) {
-
         log.info("Check email exists request for: {}", email);
-
         boolean exists = userService.existsByEmail(email);
-
-        ApiResponse<Boolean> response = ApiResponse.success(
-                exists ? "Email already exists" : "Email is available", exists);
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(exists);
     }
 }
