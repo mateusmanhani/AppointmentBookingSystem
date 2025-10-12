@@ -1,9 +1,6 @@
 package com.barbershop.user_service.service;
 
-import com.barbershop.user_service.dto.LoginRequestDto;
-import com.barbershop.user_service.dto.UserRegistrationDto;
-import com.barbershop.user_service.dto.UserResponseDto;
-import com.barbershop.user_service.dto.UserUpdateDto;
+import com.barbershop.user_service.dto.*;
 import com.barbershop.user_service.entity.User;
 import com.barbershop.user_service.entity.UserRole;
 import com.barbershop.user_service.exception.InvalidCredentialsException;
@@ -11,11 +8,14 @@ import com.barbershop.user_service.exception.UserAlreadyExistsException;
 import com.barbershop.user_service.exception.UserNotFoundException;
 import com.barbershop.user_service.mapper.UserMapper;
 import com.barbershop.user_service.repository.UserRepository;
+import com.barbershop.user_service.security.CustomUserDetailsService;
+import com.barbershop.user_service.security.JwtService;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -30,14 +30,20 @@ public class UserServiceImpl implements UserService{
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
+    private final CustomUserDetailsService customUserDetailsService;
 
     @Autowired
     public UserServiceImpl(UserRepository userRepository,
                            UserMapper userMapper,
-                           PasswordEncoder passwordEncoder){
+                           PasswordEncoder passwordEncoder,
+                           JwtService jwtService,
+                           CustomUserDetailsService customUserDetailsService){
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
+        this.customUserDetailsService = customUserDetailsService;
     }
 
     @Override
@@ -93,6 +99,43 @@ public class UserServiceImpl implements UserService{
 
         return userMapper.toResponseDto(user);
 
+    }
+
+
+    @Override
+    public JwtAuthResponseDto authenticateAndGenerateTokens(LoginRequestDto loginDto) {
+        log.info("JWT authentication request for email: {}", loginDto.email());
+
+        // find user in database
+        Optional<User> userOptional = userRepository.findActiveUserByEmail(loginDto.email());
+
+        if (userOptional.isEmpty()){
+            log.warn("JWT authentication failed: User not found for email: {}", loginDto.email());
+            throw new UserNotFoundException("Invalid email or password");
+        }
+
+        User user = userOptional.get();
+
+        // check password
+        if (!passwordEncoder.matches(loginDto.password(), user.getPassword())){
+            log.warn("JWT authentication failed: Invalid password for email {}", loginDto.email() );
+            throw new InvalidCredentialsException("Invalid email or password");
+        }
+
+        // Create UserDetails for JWT
+        UserDetails userDetails = customUserDetailsService.loadUserByUsername(user.getEmail());
+
+        // Generate JWT tokens
+        String accessToken = jwtService.generateToken(userDetails, user.getId(), user.getRole().name());
+        String refreshToken = jwtService.generateRefreshToken(userDetails);
+
+        // Get expiration time and create response
+        Long expiresIn = jwtService.getExpirationTime();
+        UserResponseDto userResponse = userMapper.toResponseDto(user);
+
+        log.info("Successfully generated JWT tokens for user ID: {}", user.getId());
+
+        return JwtAuthResponseDto.create(accessToken,refreshToken,expiresIn,userResponse);
     }
 
     @Override

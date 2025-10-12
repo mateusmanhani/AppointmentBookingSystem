@@ -1,9 +1,6 @@
 package com.barbershop.user_service.service;
 
-import com.barbershop.user_service.dto.LoginRequestDto;
-import com.barbershop.user_service.dto.UserRegistrationDto;
-import com.barbershop.user_service.dto.UserResponseDto;
-import com.barbershop.user_service.dto.UserUpdateDto;
+import com.barbershop.user_service.dto.*;
 import com.barbershop.user_service.entity.UserRole;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,8 +24,9 @@ public interface UserService {
     UserResponseDto authenticateUser(LoginRequestDto loginRequestDto);
 
     /**
-     * Verify user's email address
+     * Authenticate User and generate JWT tokens
      */
+    JwtAuthResponseDto authenticateAndGenerateTokens(LoginRequestDto loginDto);
 
     /**
      * Get user by ID

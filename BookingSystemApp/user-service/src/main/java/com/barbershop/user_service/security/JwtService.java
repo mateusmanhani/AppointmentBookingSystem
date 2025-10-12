@@ -57,19 +57,20 @@ public class JwtService {
      * Extract specific claim from token
      */
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
-        final Claims claims = extractAllClaims(token);
-        return claimsResolver.apply(claims);
+        final Claims claims = extractAllClaims(token); // Get all token information
+        return claimsResolver.apply(claims); //Use provide function to extract the specific information
     }
 
     /**
      * Generate JWT token for authenticated user
      */
     public String generateToken(UserDetails userDetails, Long userId, String role) {
+        // Create a map to store information
         Map<String, Object> extraClaims = new HashMap<>();
-        extraClaims.put("userId", userId);
-        extraClaims.put("role", role);
+        extraClaims.put("userId", userId); // Store user's database ID
+        extraClaims.put("role", role); // Store user's role
 
-        return generateToken(extraClaims, userDetails);
+        return generateToken(extraClaims, userDetails); // generate and return token
     }
 
     /**
@@ -81,6 +82,7 @@ public class JwtService {
 
     /**
      * Generate refresh token
+     * A long-lived token for automatic login, without extra info and lasting 7 days
      */
     public String generateRefreshToken(UserDetails userDetails) {
         return buildToken(new HashMap<>(), userDetails, refreshExpiration);
@@ -96,16 +98,16 @@ public class JwtService {
             UserDetails userDetails,
             long expiration
     ) {
-        Date now = new Date(System.currentTimeMillis());
-        Date expiryDate = new Date(now.getTime() + expiration);
+        Date now = new Date(System.currentTimeMillis()); // right now
+        Date expiryDate = new Date(now.getTime() + expiration); // now + expirations
 
         String token = Jwts.builder()
-                .claims(extraClaims)
-                .subject(userDetails.getUsername())
-                .issuedAt(now)
-                .expiration(expiryDate)
-                .signWith(getSignInKey())
-                .compact();
+                .claims(extraClaims) // add extra claims (userID and role)
+                .subject(userDetails.getUsername()) // set main subject (email)
+                .issuedAt(now) // when token was created
+                .expiration(expiryDate) //when it will expire
+                .signWith(getSignInKey()) //sign with the secret key
+                .compact(); // convert to final string
 
         log.debug("Generated JWT token for user: {} (expires: {})",
                 userDetails.getUsername(), expiryDate);
@@ -118,7 +120,9 @@ public class JwtService {
      */
     public boolean isTokenValid(String token, UserDetails userDetails) {
         try {
+            // get username from token
             final String username = extractUsername(token);
+            // Check if username matches and token is not expired
             return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
         } catch (Exception e) {
             log.error("Token validation failed: {}", e.getMessage());

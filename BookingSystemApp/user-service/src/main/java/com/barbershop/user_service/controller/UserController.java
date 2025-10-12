@@ -65,6 +65,22 @@ public class UserController {
     }
 
     /**
+     * JWT authentication endpoint - returns JWT tokens for secure API access
+     * POST /api/users/auth/login
+     */
+    @PostMapping("/auth/login")
+    public ResponseEntity<ApiResponse<JwtAuthResponseDto>> authenticateWithJWT (@Valid@RequestBody LoginRequestDto loginDto){
+        log.info("JWT authentication request received for email: {}", loginDto.email());
+
+        JwtAuthResponseDto authResponse = userService.authenticateAndGenerateTokens(loginDto);
+
+        // Return success response with tokens
+        ApiResponse<JwtAuthResponseDto> response = ApiResponse.success("Authentication Successfull", authResponse);
+
+        return ResponseEntity.ok(response);
+    }
+
+    /**
      * Get User by ID
      * GET /api/users/{id}
      */
