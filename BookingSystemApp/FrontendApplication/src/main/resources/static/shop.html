@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium Cuts Barbershop - BarberBook</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="css/app.css" rel="stylesheet">
+    <link href="css/shop.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<!-- Dynamic Navigation -->
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="index.html">
+            <i class="fas fa-cut text-primary me-2"></i>BarberBook
+        </a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <div class="navbar-nav ms-auto">
+                <!-- Dynamic content will be inserted here -->
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="container my-4">
+    <!-- Shop Header -->
+    <div class="row">
+        <div class="col-12">
+            <div class="shop-header bg-white rounded-3 shadow-sm p-4 mb-4">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h1 class="fw-bold mb-2 text-primary">Premium Cuts Barbershop</h1>
+                        <div class="shop-details mb-3">
+                            <div class="d-flex flex-wrap gap-3">
+                                    <span class="text-muted">
+                                        <i class="fas fa-map-marker-alt me-2"></i>123 Main Street, Downtown, City
+                                    </span>
+                                <span class="text-success fw-bold">
+                                        <i class="fas fa-clock me-2"></i>Open 9AM - 8PM
+                                    </span>
+                                <span class="text-warning">
+                                        <i class="fas fa-star me-1"></i>4.8 (340+ reviews)
+                                    </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <div class="quick-actions">
+                            <button class="btn btn-success me-2" onclick="callShop()">
+                                <i class="fas fa-phone me-2"></i>Call Now
+                            </button>
+                            <button class="btn btn-outline-primary" onclick="getDirections()">
+                                <i class="fas fa-directions me-2"></i>Directions
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Services Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="services-section bg-white rounded-3 shadow-sm p-4">
+                <h2 class="fw-bold mb-4">Our Services</h2>
+
+                <div class="row g-4">
+                    <!-- Service 1: Classic Haircut -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="service-card border rounded-3 p-3 h-100">
+                            <div class="service-header d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <h4 class="fw-bold mb-1">Classic Haircut</h4>
+                                    <p class="text-muted small mb-0">Traditional men's haircut with wash and style</p>
+                                </div>
+                                <div class="service-icon bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                    <i class="fas fa-cut"></i>
+                                </div>
+                            </div>
+                            <div class="service-details mb-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="price fw-bold text-primary fs-5">$25</span>
+                                    <span class="duration text-muted">
+                                            <i class="fas fa-clock me-1"></i>30 min
+                                        </span>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary w-100" onclick="handleBookNow('classic-haircut')">
+                                <i class="fas fa-calendar-plus me-2"></i>Book Now
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Service 2: Beard Trim -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="service-card border rounded-3 p-3 h-100">
+                            <div class="service-header d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <h4 class="fw-bold mb-1">Beard Trim</h4>
+                                    <p class="text-muted small mb-0">Professional beard trimming and shaping</p>
+                                </div>
+                                <div class="service-icon bg-success text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                    <i class="fas fa-user-tie"></i>
+                                </div>
+                            </div>
+                            <div class="service-details mb-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="price fw-bold text-success fs-5">$15</span>
+                                    <span class="duration text-muted">
+                                            <i class="fas fa-clock me-1"></i>20 min
+                                        </span>
+                                </div>
+                            </div>
+                            <button class="btn btn-success w-100" onclick="handleBookNow('beard-trim')">
+                                <i class="fas fa-calendar-plus me-2"></i>Book Now
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Service 3: Haircut & Beard -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="service-card border rounded-3 p-3 h-100">
+                            <div class="service-header d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <h4 class="fw-bold mb-1">Haircut & Beard</h4>
+                                    <p class="text-muted small mb-0">Complete grooming package deal</p>
+                                </div>
+                                <div class="service-icon bg-warning text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                    <i class="fas fa-scissors"></i>
+                                </div>
+                            </div>
+                            <div class="service-details mb-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="price fw-bold text-warning fs-5">$35</span>
+                                    <span class="duration text-muted">
+                                            <i class="fas fa-clock me-1"></i>45 min
+                                        </span>
+                                </div>
+                            </div>
+                            <button class="btn btn-warning w-100" onclick="handleBookNow('haircut-beard')">
+                                <i class="fas fa-calendar-plus me-2"></i>Book Now
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Service 4: Hot Towel Shave -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="service-card border rounded-3 p-3 h-100">
+                            <div class="service-header d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <h4 class="fw-bold mb-1">Hot Towel Shave</h4>
+                                    <p class="text-muted small mb-0">Traditional straight razor shave experience</p>
+                                </div>
+                                <div class="service-icon bg-danger text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                    <i class="fas fa-spa"></i>
+                                </div>
+                            </div>
+                            <div class="service-details mb-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="price fw-bold text-danger fs-5">$20</span>
+                                    <span class="duration text-muted">
+                                            <i class="fas fa-clock me-1"></i>25 min
+                                        </span>
+                                </div>
+                            </div>
+                            <button class="btn btn-danger w-100" onclick="handleBookNow('hot-towel-shave')">
+                                <i class="fas fa-calendar-plus me-2"></i>Book Now
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Service 5: Hair Coloring -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="service-card border rounded-3 p-3 h-100">
+                            <div class="service-header d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <h4 class="fw-bold mb-1">Hair Coloring</h4>
+                                    <p class="text-muted small mb-0">Professional hair coloring and highlights</p>
+                                </div>
+                                <div class="service-icon bg-info text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                    <i class="fas fa-palette"></i>
+                                </div>
+                            </div>
+                            <div class="service-details mb-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="price fw-bold text-info fs-5">$60</span>
+                                    <span class="duration text-muted">
+                                            <i class="fas fa-clock me-1"></i>60 min
+                                        </span>
+                                </div>
+                            </div>
+                            <button class="btn btn-info w-100" onclick="handleBookNow('hair-coloring')">
+                                <i class="fas fa-calendar-plus me-2"></i>Book Now
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Service 6: Kids Haircut -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="service-card border rounded-3 p-3 h-100">
+                            <div class="service-header d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <h4 class="fw-bold mb-1">Kids Haircut</h4>
+                                    <p class="text-muted small mb-0">Gentle cuts for children 12 and under</p>
+                                </div>
+                                <div class="service-icon bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                    <i class="fas fa-child"></i>
+                                </div>
+                            </div>
+                            <div class="service-details mb-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="price fw-bold text-secondary fs-5">$18</span>
+                                    <span class="duration text-muted">
+                                            <i class="fas fa-clock me-1"></i>25 min
+                                        </span>
+                                </div>
+                            </div>
+                            <button class="btn btn-secondary w-100" onclick="handleBookNow('kids-haircut')">
+                                <i class="fas fa-calendar-plus me-2"></i>Book Now
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Meet Our Barbers Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="barbers-section bg-white rounded-3 shadow-sm p-4">
+                <h2 class="fw-bold mb-4">Meet Our Barbers</h2>
+
+                <div class="row g-4">
+                    <!-- Barber 1 -->
+                    <div class="col-md-4">
+                        <div class="barber-card text-center">
+                            <div class="barber-avatar bg-primary text-white rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                                <i class="fas fa-user fs-2"></i>
+                            </div>
+                            <h4 class="fw-bold mb-2">Michael Rodriguez</h4>
+                            <p class="text-primary fw-bold mb-2">Master Barber</p>
+                            <div class="barber-rating text-warning mb-2">
+                                <i class="fas fa-star"></i>
+                                <span class="fw-bold">4.9</span>
+                                <span class="text-muted">(127 reviews)</span>
+                            </div>
+                            <p class="text-muted small">15+ years experience specializing in classic cuts and beard styling</p>
+                        </div>
+                    </div>
+
+                    <!-- Barber 2 -->
+                    <div class="col-md-4">
+                        <div class="barber-card text-center">
+                            <div class="barber-avatar bg-success text-white rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                                <i class="fas fa-user fs-2"></i>
+                            </div>
+                            <h4 class="fw-bold mb-2">James Wilson</h4>
+                            <p class="text-success fw-bold mb-2">Senior Barber</p>
+                            <div class="barber-rating text-warning mb-2">
+                                <i class="fas fa-star"></i>
+                                <span class="fw-bold">4.7</span>
+                                <span class="text-muted">(98 reviews)</span>
+                            </div>
+                            <p class="text-muted small">Expert in modern styles and hot towel shaves</p>
+                        </div>
+                    </div>
+
+                    <!-- Barber 3 -->
+                    <div class="col-md-4">
+                        <div class="barber-card text-center">
+                            <div class="barber-avatar bg-warning text-white rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                                <i class="fas fa-user fs-2"></i>
+                            </div>
+                            <h4 class="fw-bold mb-2">David Thompson</h4>
+                            <p class="text-warning fw-bold mb-2">Barber Specialist</p>
+                            <div class="barber-rating text-warning mb-2">
+                                <i class="fas fa-star"></i>
+                                <span class="fw-bold">4.8</span>
+                                <span class="text-muted">(112 reviews)</span>
+                            </div>
+                            <p class="text-muted small">Specializes in hair coloring and creative styling</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shop Information -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="shop-info bg-white rounded-3 shadow-sm p-4">
+                <h3 class="fw-bold mb-3">Shop Information</h3>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="info-item">
+                            <h5 class="fw-bold text-primary mb-2">
+                                <i class="fas fa-clock me-2"></i>Business Hours
+                            </h5>
+                            <div class="hours-list">
+                                <div class="d-flex justify-content-between">
+                                    <span>Monday - Saturday:</span>
+                                    <span class="fw-bold">9AM - 8PM</span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span>Sunday:</span>
+                                    <span class="text-muted">Closed</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="info-item">
+                            <h5 class="fw-bold text-success mb-2">
+                                <i class="fas fa-phone me-2"></i>Contact
+                            </h5>
+                            <p class="mb-1">
+                                <strong>Phone:</strong> +1 (555) 123-4567
+                            </p>
+                            <p class="mb-1">
+                                <strong>Email:</strong> info@premiumcuts.com
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="quick-book bg-primary text-white rounded-3 p-4 text-center">
+                <h4 class="fw-bold mb-3">Ready to Book?</h4>
+                <p class="mb-3">Choose your service and book instantly online!</p>
+                <button class="btn btn-light btn-lg w-100" onclick="scrollToServices()">
+                    <i class="fas fa-arrow-up me-2"></i>Book Appointment
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/auth-guard.js"></script>
+<script src="js/navbar.js"></script>
+<script src="js/app.js"></script>
+<script src="js/shop.js"></script>
+</body>
+</html>

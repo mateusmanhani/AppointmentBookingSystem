@@ -1,0 +1,56 @@
+/* Shop page specific styles */
+.shop-header {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.service-card {
+    transition: all 0.2s ease;
+    border: 1px solid #e9ecef;
+}
+
+.service-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.service-icon {
+    min-width: 40px;
+}
+
+.barber-card {
+    padding: 1rem;
+}
+
+.barber-avatar {
+    transition: all 0.3s ease;
+}
+
+.barber-card:hover .barber-avatar {
+    transform: scale(1.1);
+}
+
+.quick-book {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+}
+
+.info-item h5 {
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 0.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .quick-actions {
+        margin-top: 1rem;
+        text-align: center;
+    }
+
+    .quick-actions .btn {
+        margin-bottom: 0.5rem;
+        width: 100%;
+    }
+
+    .service-card {
+        margin-bottom: 1rem;
+    }
+}

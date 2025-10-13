@@ -1,0 +1,121 @@
+/* Authentication Pages Styles */
+.auth-container {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+    width: 100%;
+    max-width: 400px;
+}
+
+.logo-placeholder {
+    border: 2px dashed #dee2e6;
+}
+
+/* Tab Styles */
+.nav-pills {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 4px;
+}
+
+.nav-pills .nav-link {
+    border-radius: 6px;
+    color: #6c757d;
+    font-weight: 500;
+    border: none;
+    background: none;
+}
+
+.nav-pills .nav-link.active {
+    background: #007bff;
+    color: white;
+    box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+}
+
+/* Input Groups */
+.input-group {
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.input-group-text {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-right: none;
+}
+
+.input-group .form-control {
+    border-left: none;
+}
+
+.input-group .form-control:focus {
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    border-color: #80bdff;
+}
+
+/* Form Controls */
+.form-control {
+    border-radius: 0 8px 8px 0;
+    padding: 0.75rem 1rem;
+    font-size: 14px;
+}
+
+.form-label {
+    font-weight: 500;
+    color: #495057;
+    margin-bottom: 0.5rem;
+}
+
+/* Buttons */
+.btn-primary {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem;
+    font-weight: 500;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+    transform: translateY(-1px);
+}
+
+.btn-outline-secondary {
+    border-radius: 8px;
+    border-color: #dee2e6;
+}
+
+.btn-outline-secondary:hover {
+    background: #f8f9fa;
+    border-color: #dee2e6;
+    color: #495057;
+}
+
+/* Social Icons */
+.fab {
+    font-size: 1.2rem;
+}
+
+/* Form Check */
+.form-check-input:checked {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+/* Links */
+a.text-primary {
+    font-weight: 500;
+}
+
+a.text-primary:hover {
+    text-decoration: underline !important;
+}
+
+/* Responsive */
+@media (max-width: 576px) {
+    .auth-container {
+        margin: 1rem;
+        padding: 1.5rem;
+    }
+}

@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Appointment - BarberBook</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="css/booking.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="index.html">
+            <i class="fas fa-cut text-primary me-2"></i>BarberBook
+        </a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <div class="navbar-nav ms-auto">
+                <!-- Dynamic content will be inserted here -->
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="container my-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="booking-container bg-white rounded shadow-sm">
+                <!-- Service Header -->
+                <div class="service-header p-4 border-bottom">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h2 class="fw-bold text-primary mb-2">Haircut & Styling</h2>
+                            <p class="text-muted mb-1">Professional haircut with wash and styling</p>
+                            <div class="d-flex align-items-center">
+                                <span class="text-muted me-3">60 minutes</span>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <div class="price-tag bg-primary text-white rounded px-3 py-2">
+                                <span class="h4 mb-0">$45</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-4">
+                    <!-- Date & Employee Selection -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Select Date</label>
+                            <input type="date" class="form-control form-control-lg" id="appointmentDate" value="2023-07-02">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Select Employee</label>
+                            <select class="form-select form-select-lg" id="employeeSelect">
+                                <option value="jennifer">Jennifer Smith</option>
+                                <option value="michael">Michael Rodriguez</option>
+                                <option value="sarah">Sarah Johnson</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Available Time Slots -->
+                    <div class="mb-4">
+                        <h5 class="fw-bold mb-3">Available Time Slots</h5>
+
+                        <!-- Mini Calendar -->
+                        <div class="mini-calendar bg-light rounded p-3 mb-4">
+                            <div class="row text-center small fw-bold text-muted mb-2">
+                                <div class="col">Sun</div>
+                                <div class="col">Mon</div>
+                                <div class="col">Tue</div>
+                                <div class="col">Wed</div>
+                                <div class="col">Thu</div>
+                                <div class="col">Fri</div>
+                                <div class="col">Sat</div>
+                            </div>
+                            <div class="row text-center">
+                                <div class="col mini-day">28</div>
+                                <div class="col mini-day">29</div>
+                                <div class="col mini-day">30</div>
+                                <div class="col mini-day active">1</div>
+                                <div class="col mini-day">2</div>
+                                <div class="col mini-day">3</div>
+                                <div class="col mini-day">4</div>
+                            </div>
+                        </div>
+
+                        <h6 class="fw-bold mb-3">Available Times for July 2, 2023</h6>
+
+                        <!-- Time Slots Grid -->
+                        <div class="time-slots-grid">
+                            <div class="row g-2 mb-3">
+                                <div class="col-6 col-md-3">
+                                    <button type="button" class="btn btn-outline-primary w-100 time-slot" data-time="9:00 AM">
+                                        9:00 AM
+                                    </button>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <button type="button" class="btn btn-outline-primary w-100 time-slot" data-time="10:30 AM">
+                                        10:30 AM
+                                    </button>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <button type="button" class="btn btn-outline-primary w-100 time-slot" data-time="12:00 PM">
+                                        12:00 PM
+                                    </button>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <button type="button" class="btn btn-outline-primary w-100 time-slot" data-time="1:30 PM">
+                                        1:30 PM
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="row g-2 mb-3">
+                                <div class="col-6 col-md-3">
+                                    <button type="button" class="btn btn-outline-primary w-100 time-slot" data-time="3:00 PM">
+                                        3:00 PM
+                                    </button>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <button type="button" class="btn btn-outline-primary w-100 time-slot" data-time="4:30 PM">
+                                        4:30 PM
+                                    </button>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <button type="button" class="btn btn-outline-primary w-100 time-slot" data-time="6:00 PM">
+                                        6:00 PM
+                                    </button>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <button type="button" class="btn btn-primary w-100 time-slot selected" data-time="7:30 PM">
+                                        7:30 PM
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Appointment Details Summary -->
+                    <div class="appointment-details bg-light rounded p-4 mb-4">
+                        <h5 class="fw-bold mb-3">Appointment Details</h5>
+
+                        <div class="details-grid">
+                            <div class="row mb-2">
+                                <div class="col-4 text-muted">Service:</div>
+                                <div class="col-8 fw-bold">Haircut & Styling</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-4 text-muted">Employee:</div>
+                                <div class="col-8">Jennifer Smith</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-4 text-muted">Date:</div>
+                                <div class="col-8">July 2, 2023</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-4 text-muted">Time:</div>
+                                <div class="col-8 fw-bold text-primary" id="selectedTime">7:30 PM</div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-4 text-muted">Duration:</div>
+                                <div class="col-8">60 minutes</div>
+                            </div>
+
+                            <hr>
+
+                            <div class="row">
+                                <div class="col-4 fw-bold">Total Price:</div>
+                                <div class="col-8 fw-bold text-primary fs-5">$45.00</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="button" class="btn btn-outline-secondary me-md-2" onclick="history.back()">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Shop
+                        </button>
+                        <button type="button" class="btn btn-primary btn-lg px-4" onclick="proceedToPayment()">
+                            <i class="fas fa-credit-card me-2"></i>Book Appointment
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/booking.js"></script>
+<script src="js/auth-guard.js"></script>
+<script src="js/navbar.js"></script>
+<script src="js/app.js"></script>
+
+<script>
+    // Protect booking page - require authentication
+    document.addEventListener('DOMContentLoaded', function() {
+        const auth = AuthGuard.requireAuth();
+        if (!auth) return; // Will redirect to login
+
+        // Continue with booking functionality...
+        console.log('Booking page loaded for authenticated user');
+    });
+</script>
+
+</body>
+</html>

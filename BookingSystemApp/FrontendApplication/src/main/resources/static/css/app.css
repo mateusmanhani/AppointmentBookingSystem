@@ -1,0 +1,114 @@
+/* General Styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+}
+
+.navbar-brand {
+    font-size: 1.3rem;
+}
+
+/* Home Page Styles */
+.hero-section {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+}
+
+.search-container .form-control {
+    border-radius: 12px 0 0 12px;
+    font-size: 1.1rem;
+}
+
+.search-container .btn {
+    border-radius: 0 12px 12px 0;
+    font-size: 1.1rem;
+}
+
+.service-card {
+    transition: transform 0.2s ease-in-out;
+    border-radius: 12px;
+}
+
+.hover-card:hover {
+    transform: translateY(-5px);
+}
+
+.service-placeholder {
+    border: 2px dashed #dee2e6;
+}
+
+/* Shop Page Styles */
+.shop-header {
+    border-left: 4px solid #007bff;
+}
+
+.service-item {
+    transition: background-color 0.2s ease;
+    border: 1px solid #e9ecef;
+}
+
+.service-item:hover {
+    background-color: #e7f3ff !important;
+}
+
+.barber-card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.barber-card:hover {
+    transform: translateY(-3px);
+}
+
+.barber-photo {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+}
+
+.shop-info .fas {
+    width: 16px;
+    text-align: center;
+}
+
+/* Button Styles */
+.btn {
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    border: none;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+    transform: translateY(-1px);
+}
+
+/* Card Shadows */
+.shadow-sm {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+}
+
+.shadow-sm:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .hero-section {
+        height: 250px !important;
+    }
+
+    .search-container .input-group-lg input {
+        height: 50px !important;
+    }
+
+    .service-item {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .service-item .btn {
+        margin-top: 10px;
+        width: 100%;
+    }
+}
