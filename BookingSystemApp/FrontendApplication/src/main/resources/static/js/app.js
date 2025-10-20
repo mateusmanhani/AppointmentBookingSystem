@@ -35,6 +35,8 @@ async function apiCall(endpoint, options = {}) {
         }
 
         if (!response.ok) {
+            // Log the full response body for easier debugging of server errors
+            console.error('API response error body:', data);
             throw new Error(data.message || `HTTP ${response.status}: ${response.statusText}`);
         }
 
