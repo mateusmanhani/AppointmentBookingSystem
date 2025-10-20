@@ -1,0 +1,23 @@
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  GITHUB_USERNAME: mateusmanhani   # Your actual GitHub username
+  GITHUB_PAT: $(githubPat)          # Secret PAT variable stored in Azure DevOps
+
+steps:
+- checkout: self
+  persistCredentials: true
+
+- script: |
+    git config user.email "mateus.manhani.dias@gmail.com"
+    git config user.name "$(GITHUB_USERNAME)"
+
+    git remote add github https://mateusmanhani:$(GITHUB_PAT)@github.com/mateusmanhani/AppointmentBookingSystem.git
+
+    git push github --all
+    git push github --tags
+  displayName: 'Push code to GitHub'
