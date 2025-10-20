@@ -18,7 +18,7 @@ class NavbarManager {
                 <a class="nav-link text-muted" href="index.html">
                     <i class="fas fa-home me-1"></i>Home
                 </a>
-                <a class="nav-link text-muted" href="shops.html">
+                <a class="nav-link text-muted" href="shop.html">
                     <i class="fas fa-map-marker-alt me-1"></i>Shops
                 </a>
                 <a class="nav-link" href="dashboard.html">
@@ -44,7 +44,7 @@ class NavbarManager {
                 <a class="nav-link text-muted" href="index.html">
                     <i class="fas fa-home me-1"></i>Home
                 </a>
-                <a class="nav-link text-muted" href="shops.html">
+                <a class="nav-link text-muted" href="shop.html">
                     <i class="fas fa-map-marker-alt me-1"></i>Shops
                 </a>
                 <a class="nav-link" href="login.html">
