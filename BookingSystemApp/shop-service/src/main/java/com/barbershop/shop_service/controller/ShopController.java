@@ -123,9 +123,4 @@ public class ShopController {
             return ResponseEntity.notFound().build();
         }
     }
-
-    /**
-     * DTO used to update a shop. Place here for convenience; you can move to its own file.
-     */
-    // Update DTO moved to dto.ShopUpdateDto
 }
