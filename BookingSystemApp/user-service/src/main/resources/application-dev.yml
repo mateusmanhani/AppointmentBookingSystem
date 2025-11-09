@@ -1,6 +1,18 @@
 spring:
   application:
     name: user-service
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://bookingsystemdb.cr88iggu0vsh.eu-north-1.rds.amazonaws.com:3306/user_service_db}
+    username: mateusmanhani
+    password: Egmqr123k*
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
   threads:
     virtual:
       enabled: true
