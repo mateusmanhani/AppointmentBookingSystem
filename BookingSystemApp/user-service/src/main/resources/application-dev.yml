@@ -2,9 +2,10 @@ spring:
   application:
     name: user-service
   datasource:
+    # Prefer using environment variables for credentials. In CI or App Service set these as secure variables / app settings.
     url: ${SPRING_DATASOURCE_URL:jdbc:mysql://bookingsystemdb.cr88iggu0vsh.eu-north-1.rds.amazonaws.com:3306/user_service_db}
-    username: mateusmanhani
-    password: Egmqr123k*
+    username: ${SPRING_DATASOURCE_USERNAME:}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:

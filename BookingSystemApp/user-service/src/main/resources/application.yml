@@ -5,6 +5,14 @@ spring:
     virtual:
       enabled: true
 
+# Datasource defaults: read from environment variables. For production (Azure) set these in App Service Application Settings
+# or provide them in the deployment pipeline as secure variables / Key Vault references.
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:}
+    username: ${SPRING_DATASOURCE_USERNAME:}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
 server:
   port: 8081
 
