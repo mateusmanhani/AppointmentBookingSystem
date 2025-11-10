@@ -43,6 +43,17 @@ public class SecurityConfig {
                 .requestMatchers(org.springframework.http.HttpMethod.PUT, "/api/shops/**").authenticated()
                 .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/shops/**").authenticated()
                 
+                // Service endpoints - GET is public, POST/PUT/DELETE require authentication
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/shops/*/services", "/api/shops/*/services/**").permitAll()
+                .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/shops/*/services").authenticated()
+                .requestMatchers(org.springframework.http.HttpMethod.PUT, "/api/shops/*/services/**").authenticated()
+                .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/shops/*/services/**").authenticated()
+                
+                // Employee endpoints - GET is public, POST/DELETE require authentication
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/shops/*/employees", "/api/shops/*/employees/**").permitAll()
+                .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/shops/*/employees").authenticated()
+                .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/shops/*/employees/**").authenticated()
+                
                 .anyRequest().authenticated()
             )
             .oauth2ResourceServer(oauth2 -> oauth2
