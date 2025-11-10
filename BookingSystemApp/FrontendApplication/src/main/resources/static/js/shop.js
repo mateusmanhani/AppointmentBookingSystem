@@ -22,6 +22,7 @@ class ShopPageManager {
         // Load shop data
         await this.loadShop();
         await this.loadServices();
+        await this.loadEmployees();
         
         // Setup interactions
         this.setupServiceCards();
@@ -190,6 +191,87 @@ class ShopPageManager {
                 <button class="btn btn-primary w-100" onclick="shopPageManager.handleBookNow(${service.id})">
                     <i class="fas fa-calendar-plus me-2"></i>Book Now
                 </button>
+            </div>
+        `;
+
+        return col;
+    }
+
+    async loadEmployees() {
+        const loadingEl = document.getElementById('employeesLoading');
+        const noEmployeesEl = document.getElementById('noEmployees');
+        const gridEl = document.getElementById('employeesGrid');
+
+        if (!loadingEl || !noEmployeesEl || !gridEl) return;
+
+        loadingEl.classList.remove('d-none');
+        noEmployeesEl.classList.add('d-none');
+        gridEl.innerHTML = '';
+
+        try {
+            console.log(`Fetching employees - GET /api/shops/${this.shopId}/employees`);
+            
+            const response = await fetch(`${this.SHOP_SERVICE_URL}/api/shops/${this.shopId}/employees`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: Failed to fetch employees`);
+            }
+
+            this.employees = await response.json();
+            console.log('Employees loaded:', this.employees.length);
+            
+            loadingEl.classList.add('d-none');
+
+            if (this.employees.length === 0) {
+                noEmployeesEl.classList.remove('d-none');
+            } else {
+                this.renderEmployees();
+            }
+            
+        } catch (error) {
+            console.error('Error loading employees:', error);
+            loadingEl.classList.add('d-none');
+            // Show empty state on error
+            noEmployeesEl.classList.remove('d-none');
+        }
+    }
+
+    renderEmployees() {
+        const gridEl = document.getElementById('employeesGrid');
+        if (!gridEl) return;
+
+        gridEl.innerHTML = '';
+        
+        const colors = ['primary', 'success', 'warning', 'info', 'danger', 'secondary'];
+        
+        this.employees.forEach((employee, index) => {
+            const employeeCard = this.createEmployeeCard(employee, colors[index % colors.length]);
+            gridEl.appendChild(employeeCard);
+        });
+    }
+
+    createEmployeeCard(employee, colorClass) {
+        const col = document.createElement('div');
+        col.className = 'col-md-4';
+
+        const role = employee.role || 'Team Member';
+        const email = employee.email || '';
+        const phone = employee.phone || '';
+
+        col.innerHTML = `
+            <div class="barber-card text-center">
+                <div class="barber-avatar bg-${colorClass} text-white rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                    <i class="fas fa-user fs-2"></i>
+                </div>
+                <h4 class="fw-bold mb-2">${this.escapeHtml(employee.name)}</h4>
+                <p class="text-${colorClass} fw-bold mb-2">${this.escapeHtml(role)}</p>
+                ${email ? `<p class="text-muted small mb-1"><i class="fas fa-envelope me-1"></i>${this.escapeHtml(email)}</p>` : ''}
+                ${phone ? `<p class="text-muted small mb-0"><i class="fas fa-phone me-1"></i>${this.escapeHtml(phone)}</p>` : ''}
             </div>
         `;
 

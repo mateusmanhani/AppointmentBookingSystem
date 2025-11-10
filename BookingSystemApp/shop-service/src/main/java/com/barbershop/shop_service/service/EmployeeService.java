@@ -1,6 +1,7 @@
 package com.barbershop.shop_service.service;
 
 import com.barbershop.shop_service.dto.EmployeeRequestDto;
+import com.barbershop.shop_service.dto.EmployeeUpdateDto;
 import com.barbershop.shop_service.entity.Employee;
 import com.barbershop.shop_service.repository.EmployeeRepository;
 import jakarta.transaction.Transactional;
@@ -49,6 +50,33 @@ public class EmployeeService {
     public Optional<Employee> getEmployeeByIdAndShopId(Long employeeId, Long shopId) {
         log.info("Fetching employee id: {} for shop id: {}", employeeId, shopId);
         return employeeRepository.findByIdAndShopId(employeeId, shopId);
+    }
+    
+    /**
+     * Update an employee's information.
+     * Supports partial updates - only provided fields will be updated.
+     */
+    public Employee updateEmployee(Long employeeId, Long shopId, EmployeeUpdateDto dto) {
+        log.info("Updating employee id: {} for shop id: {}", employeeId, shopId);
+        
+        Employee employee = employeeRepository.findByIdAndShopId(employeeId, shopId)
+            .orElseThrow(() -> new RuntimeException("Employee not found"));
+        
+        // Update only non-null fields
+        if (dto.name() != null) {
+            employee.setName(dto.name());
+        }
+        if (dto.role() != null) {
+            employee.setRole(dto.role());
+        }
+        if (dto.email() != null) {
+            employee.setEmail(dto.email());
+        }
+        if (dto.phone() != null) {
+            employee.setPhone(dto.phone());
+        }
+        
+        return employeeRepository.save(employee);
     }
     
     /**

@@ -12,6 +12,7 @@ class ShopDetailManager {
         this.addServiceModal = null;
         this.editServiceModal = null;
         this.addEmployeeModal = null;
+        this.editEmployeeModal = null;
     }
 
     async init() {
@@ -34,6 +35,7 @@ class ShopDetailManager {
         this.addServiceModal = new bootstrap.Modal(document.getElementById('addServiceModal'));
         this.editServiceModal = new bootstrap.Modal(document.getElementById('editServiceModal'));
         this.addEmployeeModal = new bootstrap.Modal(document.getElementById('addEmployeeModal'));
+        this.editEmployeeModal = new bootstrap.Modal(document.getElementById('editEmployeeModal'));
 
         // Load shop data
         await this.loadShopData();
@@ -512,9 +514,14 @@ class ShopDetailManager {
                             <i class="fas fa-phone me-1"></i>${this.escapeHtml(employee.phone || 'N/A')}
                         </p>
                     </div>
-                    <button class="btn btn-outline-danger btn-sm" onclick="shopDetailManager.deleteEmployee(${employee.id})">
-                        <i class="fas fa-trash"></i>
-                    </button>
+                    <div class="btn-group-vertical">
+                        <button class="btn btn-outline-primary btn-sm mb-1" onclick="shopDetailManager.editEmployee(${employee.id})" title="Edit">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-outline-danger btn-sm" onclick="shopDetailManager.deleteEmployee(${employee.id})" title="Delete">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         `;
@@ -579,6 +586,77 @@ class ShopDetailManager {
         } catch (error) {
             console.error('Error adding employee:', error);
             this.showMessage('addEmployeeMessage', error.message || 'Failed to add employee', 'danger');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = originalContent;
+        }
+    }
+
+    editEmployee(employeeId) {
+        const employee = this.employees.find(e => e.id === employeeId);
+        if (!employee) return;
+
+        document.getElementById('editEmployeeId').value = employeeId;
+        document.getElementById('editEmployeeName').value = employee.name;
+        document.getElementById('editEmployeeRole').value = employee.role;
+        document.getElementById('editEmployeeEmail').value = employee.email || '';
+        document.getElementById('editEmployeePhone').value = employee.phone || '';
+        document.getElementById('editEmployeeMessage').innerHTML = '';
+
+        this.editEmployeeModal.show();
+    }
+
+    async updateEmployee() {
+        const btn = document.getElementById('updateEmployeeBtn');
+        const originalContent = btn.innerHTML;
+        const employeeId = document.getElementById('editEmployeeId').value;
+
+        const formData = {
+            name: document.getElementById('editEmployeeName').value.trim(),
+            role: document.getElementById('editEmployeeRole').value.trim(),
+            email: document.getElementById('editEmployeeEmail').value.trim(),
+            phone: document.getElementById('editEmployeePhone').value.trim()
+        };
+
+        if (!formData.name || !formData.role) {
+            this.showMessage('editEmployeeMessage', 'Please fill in all required fields', 'danger');
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Updating...';
+
+        try {
+            const token = this.getAuthToken();
+            console.log(`Updating employee - PUT /api/shops/${this.shopId}/employees/${employeeId}`, formData);
+            
+            const response = await fetch(`${this.SHOP_SERVICE_URL}/api/shops/${this.shopId}/employees/${employeeId}`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || `Failed to update employee: ${response.status}`);
+            }
+
+            const updatedEmployee = await response.json();
+            console.log('Employee updated:', updatedEmployee);
+
+            this.showMessage('editEmployeeMessage', 'Employee updated successfully!', 'success');
+            
+            setTimeout(() => {
+                this.editEmployeeModal.hide();
+                this.loadEmployees();
+            }, 1500);
+
+        } catch (error) {
+            console.error('Error updating employee:', error);
+            this.showMessage('editEmployeeMessage', error.message || 'Failed to update employee', 'danger');
         } finally {
             btn.disabled = false;
             btn.innerHTML = originalContent;
@@ -652,6 +730,11 @@ class ShopDetailManager {
         // Add employee
         document.getElementById('saveEmployeeBtn').addEventListener('click', () => {
             this.addEmployee();
+        });
+
+        // Update employee
+        document.getElementById('updateEmployeeBtn').addEventListener('click', () => {
+            this.updateEmployee();
         });
     }
 }

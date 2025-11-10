@@ -2,6 +2,7 @@ package com.barbershop.shop_service.controller;
 
 import com.barbershop.shop_service.dto.EmployeeRequestDto;
 import com.barbershop.shop_service.dto.EmployeeResponseDto;
+import com.barbershop.shop_service.dto.EmployeeUpdateDto;
 import com.barbershop.shop_service.entity.Employee;
 import com.barbershop.shop_service.entity.Shop;
 import com.barbershop.shop_service.service.EmployeeService;
@@ -108,6 +109,54 @@ public class EmployeeController {
                 e.getId(), e.getShopId(), e.getName(), e.getRole(),
                 e.getEmail(), e.getPhone(), e.getCreatedAt(), e.getUpdatedAt())))
             .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    /**
+     * Update an employee's information.
+     * PUT /api/shops/{shopId}/employees/{employeeId}
+     * Requires SHOP_OWNER role and ownership of the shop.
+     * Supports partial updates - only provided fields will be updated.
+     */
+    @PreAuthorize("hasRole('SHOP_OWNER')")
+    @PutMapping("/{employeeId}")
+    public ResponseEntity<EmployeeResponseDto> updateEmployee(
+            @PathVariable Long shopId,
+            @PathVariable Long employeeId,
+            @Valid @RequestBody EmployeeUpdateDto dto,
+            Authentication authentication) {
+
+        // Verify shop ownership
+        Jwt jwt = (Jwt) authentication.getPrincipal();
+        Long currentUserId = jwt.getClaim("userId");
+
+        Optional<Shop> shopMaybe = shopService.getShopById(shopId);
+        if (shopMaybe.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Shop shop = shopMaybe.get();
+        if (!shop.getOwnerId().equals(currentUserId)) {
+            return ResponseEntity.status(403).build(); // Forbidden
+        }
+
+        // Check if employee exists in this shop
+        Optional<Employee> existingEmployee = employeeService.getEmployeeByIdAndShopId(employeeId, shopId);
+        if (existingEmployee.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        // Update employee
+        try {
+            Employee updated = employeeService.updateEmployee(employeeId, shopId, dto);
+            
+            EmployeeResponseDto response = new EmployeeResponseDto(
+                updated.getId(), updated.getShopId(), updated.getName(), updated.getRole(),
+                updated.getEmail(), updated.getPhone(), updated.getCreatedAt(), updated.getUpdatedAt());
+
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     /**
