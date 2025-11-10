@@ -1,0 +1,239 @@
+/* Owner Dashboard Styles */
+
+/* Stat Cards */
+.stat-card {
+    transition: transform 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+
+/* Shop Cards */
+.shop-card {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.shop-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transform: translateY(-3px);
+}
+
+.shop-details {
+    border-top: 1px solid #f0f0f0;
+    border-bottom: 1px solid #f0f0f0;
+    padding: 10px 0;
+}
+
+.shop-stats .stat-box {
+    transition: background-color 0.2s;
+}
+
+.shop-stats .stat-box:hover {
+    background-color: #e9ecef !important;
+}
+
+/* Shop Header Section */
+.shop-header-section {
+    border-left: 4px solid var(--bs-primary);
+}
+
+/* Info Items */
+.info-item {
+    padding: 12px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.info-item label {
+    display: block;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 5px;
+}
+
+/* Service & Employee Cards */
+.service-card,
+.employee-card {
+    transition: all 0.2s ease;
+}
+
+.service-card:hover,
+.employee-card:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.service-card {
+    background: linear-gradient(to bottom right, #ffffff, #f8f9fa);
+}
+
+.employee-card {
+    background: #ffffff;
+}
+
+.employee-avatar {
+    font-size: 1.2rem;
+}
+
+/* Tabs Styling */
+.nav-tabs {
+    border-bottom: none;
+}
+
+.nav-tabs .nav-link {
+    border: none;
+    color: #6c757d;
+    font-weight: 500;
+    padding: 1rem 1.5rem;
+    transition: all 0.2s;
+}
+
+.nav-tabs .nav-link:hover {
+    color: var(--bs-primary);
+    background-color: #f8f9fa;
+}
+
+.nav-tabs .nav-link.active {
+    color: var(--bs-primary);
+    background-color: white;
+    border-bottom: 3px solid var(--bs-primary);
+}
+
+/* Modal Enhancements */
+.modal-header {
+    background: linear-gradient(135deg, var(--bs-primary) 0%, #0056b3 100%);
+    color: white;
+}
+
+.modal-header .btn-close {
+    filter: invert(1);
+}
+
+/* Form Styling */
+.form-label {
+    font-weight: 500;
+    color: #495057;
+    margin-bottom: 0.5rem;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+/* Button Enhancements */
+.btn {
+    transition: all 0.2s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+/* Badge Enhancements */
+.badge {
+    font-weight: 500;
+    padding: 0.4em 0.8em;
+}
+
+/* Loading States */
+.spinner-border {
+    width: 3rem;
+    height: 3rem;
+}
+
+/* Quick Actions */
+.quick-actions .btn {
+    min-width: 120px;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .stat-card {
+        margin-bottom: 1rem;
+    }
+
+    .shop-card {
+        margin-bottom: 1rem;
+    }
+
+    .nav-tabs .nav-link {
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    .employee-avatar {
+        width: 40px !important;
+        height: 40px !important;
+        min-width: 40px !important;
+        font-size: 1rem;
+    }
+}
+
+/* Stat Item in Overview */
+.stat-item {
+    padding: 8px 0;
+}
+
+/* Empty States */
+#noShops i,
+#noServices i,
+#noEmployees i {
+    opacity: 0.5;
+}
+
+/* Alert Animations */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.alert {
+    animation: slideIn 0.3s ease;
+}
+
+/* Card Transitions */
+.service-card .btn-group,
+.employee-card button {
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.service-card:hover .btn-group,
+.employee-card:hover button {
+    opacity: 1;
+}
+
+/* Welcome Section */
+.welcome-section {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border-left: 4px solid var(--bs-primary);
+}
+
+/* Scroll Behavior */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Focus Visible for Accessibility */
+*:focus-visible {
+    outline: 2px solid var(--bs-primary);
+    outline-offset: 2px;
+}

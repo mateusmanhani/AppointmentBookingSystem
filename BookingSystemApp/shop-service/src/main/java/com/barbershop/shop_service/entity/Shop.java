@@ -32,6 +32,27 @@ public class Shop {
     @Column(name = "address", nullable = false, length = 300)
     private String address;
 
+    @Column(name = "city", length = 100)
+    private String city;
+
+    @Column(name = "state", length = 50)
+    private String state;
+
+    @Column(name = "zip_code", length = 20)
+    private String zipCode;
+
+    @Column(name = "phone", length = 20)
+    private String phone;
+
+    @Column(name = "description", length = 1000)
+    private String description;
+
+    @Column(name = "opening_time", length = 10)
+    private String openingTime; // Format: "09:00"
+
+    @Column(name = "closing_time", length = 10)
+    private String closingTime; // Format: "18:00"
+
     // Foreign key to owning user/account
     @NotNull
     @Column(name = "owner_id", nullable = false)
@@ -116,5 +137,61 @@ public class Shop {
 
     public void setLongitude(double longitude) {
         this.longitude = longitude;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
+    }
+
+    public String getZipCode() {
+        return zipCode;
+    }
+
+    public void setZipCode(String zipCode) {
+        this.zipCode = zipCode;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getOpeningTime() {
+        return openingTime;
+    }
+
+    public void setOpeningTime(String openingTime) {
+        this.openingTime = openingTime;
+    }
+
+    public String getClosingTime() {
+        return closingTime;
+    }
+
+    public void setClosingTime(String closingTime) {
+        this.closingTime = closingTime;
     }
 }

@@ -58,9 +58,7 @@ public class ShopController {
             .buildAndExpand(created.getId())
             .toUri();
 
-        ShopResponseDto response = new ShopResponseDto(
-            created.getId(), created.getName(), created.getAddress(), created.getOwnerId(),
-            created.getLatitude(), created.getLongitude(), created.getCreatedAt(), created.getUpdatedAt());
+        ShopResponseDto response = toResponseDto(created);
 
         return ResponseEntity.created(location).body(response);
     }
@@ -72,9 +70,7 @@ public class ShopController {
     @GetMapping("/{id}")
     public ResponseEntity<ShopResponseDto> getShopById(@PathVariable Long id) {
         Optional<Shop> maybe = shopService.getShopById(id);
-        return maybe.map(shop -> ResponseEntity.ok(new ShopResponseDto(
-                        shop.getId(), shop.getName(), shop.getAddress(), shop.getOwnerId(),
-                        shop.getLatitude(), shop.getLongitude(), shop.getCreatedAt(), shop.getUpdatedAt())))
+        return maybe.map(shop -> ResponseEntity.ok(toResponseDto(shop)))
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
@@ -88,9 +84,7 @@ public class ShopController {
             @RequestParam(defaultValue = "10") int size) {
 
     Page<Shop> result = shopService.findAll(PageRequest.of(page, size));
-    Page<ShopResponseDto> dtoPage = result.map(shop -> new ShopResponseDto(
-        shop.getId(), shop.getName(), shop.getAddress(), shop.getOwnerId(),
-        shop.getLatitude(), shop.getLongitude(), shop.getCreatedAt(), shop.getUpdatedAt()));
+    Page<ShopResponseDto> dtoPage = result.map(this::toResponseDto);
 
     return ResponseEntity.ok(dtoPage);
     }
@@ -108,9 +102,7 @@ public class ShopController {
 
         java.util.List<Shop> myShops = shopService.getShopsByOwnerId(currentUserId);
         java.util.List<ShopResponseDto> responseDtos = myShops.stream()
-            .map(shop -> new ShopResponseDto(
-                shop.getId(), shop.getName(), shop.getAddress(), shop.getOwnerId(),
-                shop.getLatitude(), shop.getLongitude(), shop.getCreatedAt(), shop.getUpdatedAt()))
+            .map(this::toResponseDto)
             .toList();
 
         return ResponseEntity.ok(responseDtos);
@@ -145,9 +137,7 @@ public class ShopController {
         }
 
         Shop updated = shopService.updateFromDto(id, dto);
-        ShopResponseDto response = new ShopResponseDto(
-                updated.getId(), updated.getName(), updated.getAddress(), updated.getOwnerId(),
-                updated.getLatitude(), updated.getLongitude(), updated.getCreatedAt(), updated.getUpdatedAt());
+        ShopResponseDto response = toResponseDto(updated);
 
         return ResponseEntity.ok(response);
     }
@@ -181,5 +171,28 @@ public class ShopController {
 
         shopService.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Helper method to convert Shop entity to ShopResponseDto
+     */
+    private ShopResponseDto toResponseDto(Shop shop) {
+        return new ShopResponseDto(
+            shop.getId(),
+            shop.getName(),
+            shop.getAddress(),
+            shop.getCity(),
+            shop.getState(),
+            shop.getZipCode(),
+            shop.getPhone(),
+            shop.getDescription(),
+            shop.getOpeningTime(),
+            shop.getClosingTime(),
+            shop.getOwnerId(),
+            shop.getLatitude(),
+            shop.getLongitude(),
+            shop.getCreatedAt(),
+            shop.getUpdatedAt()
+        );
     }
 }
