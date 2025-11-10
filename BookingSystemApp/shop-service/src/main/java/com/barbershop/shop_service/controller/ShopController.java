@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.springframework.security.oauth2.jwt.Jwt;
+
 
 import com.barbershop.shop_service.dto.ShopRequestDto;
 import com.barbershop.shop_service.dto.ShopResponseDto;
@@ -42,20 +45,24 @@ public class ShopController {
      * Create a new shop.
      * Returns 201 Created with Location header pointing to the new resource.
      */
+    @PreAuthorize("hasRole('SHOP_OWNER')")
     @PostMapping
-    public ResponseEntity<ShopResponseDto> createShop(@Valid @RequestBody ShopRequestDto dto) {
-    Shop created = shopService.createFromDto(dto);
-    URI location = ServletUriComponentsBuilder
-        .fromCurrentRequest()
-        .path("/{id}")
-        .buildAndExpand(created.getId())
-        .toUri();
+    public ResponseEntity<ShopResponseDto> createShop(@Valid @RequestBody ShopRequestDto dto, org.springframework.security.core.Authentication authentication) {
+        Jwt jwt = (Jwt) authentication.getPrincipal();
+        Long currentUserId = jwt.getClaim("userId");
 
-    ShopResponseDto response = new ShopResponseDto(
-        created.getId(), created.getName(), created.getAddress(), created.getOwnerId(),
-        created.getLatitude(), created.getLongitude(), created.getCreatedAt(), created.getUpdatedAt());
+        Shop created = shopService.createFromDto(dto, currentUserId);
+        URI location = ServletUriComponentsBuilder
+            .fromCurrentRequest()
+            .path("/{id}")
+            .buildAndExpand(created.getId())
+            .toUri();
 
-    return ResponseEntity.created(location).body(response);
+        ShopResponseDto response = new ShopResponseDto(
+            created.getId(), created.getName(), created.getAddress(), created.getOwnerId(),
+            created.getLatitude(), created.getLongitude(), created.getCreatedAt(), created.getUpdatedAt());
+
+        return ResponseEntity.created(location).body(response);
     }
 
     /**
@@ -92,6 +99,7 @@ public class ShopController {
      * Update a shop by id using UpdateShopDTO.
      * Returns 200 OK with updated shop or 404 Not Found when the shop does not exist.
      */
+    @PreAuthorize("hasRole('SHOP_OWNER')")
     @PutMapping("/{id}")
     public ResponseEntity<ShopResponseDto> updateShop(
             @PathVariable Long id,
@@ -114,6 +122,7 @@ public class ShopController {
      * Delete a shop by id.
      * Returns 204 No Content when deleted, 404 Not Found when not present.
      */
+    @PreAuthorize("hasRole('SHOP_OWNER')")
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteShop(@PathVariable Long id) {
         boolean deleted = shopService.deleteById(id);

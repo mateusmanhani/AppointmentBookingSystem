@@ -28,11 +28,11 @@ public class ShopService {
     }
 
     /* Create from DTO */
-    public Shop createFromDto(com.barbershop.shop_service.dto.ShopRequestDto dto) {
+    public Shop createFromDto(com.barbershop.shop_service.dto.ShopRequestDto dto, Long ownerId) {
         Shop shop = new Shop();
         shop.setName(dto.name());
         shop.setAddress(dto.address());
-        shop.setOwnerId(dto.ownerId());
+        shop.setOwnerId(ownerId);
         if (dto.latitude() != null) shop.setLatitude(dto.latitude());
         if (dto.longitude() != null) shop.setLongitude(dto.longitude());
         return shopRepository.save(shop);

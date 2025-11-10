@@ -4,6 +4,8 @@ spring:
   threads:
     virtual:
       enabled: true
+  profiles:
+    active: local
 
 # Datasource defaults: read from environment variables. For production (Azure) set these in App Service Application Settings
 # or provide them in the deployment pipeline as secure variables / Key Vault references.

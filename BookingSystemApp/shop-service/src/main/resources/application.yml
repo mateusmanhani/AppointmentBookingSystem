@@ -16,6 +16,12 @@ spring:
       hibernate:
         format_sql: true        # Formats SQL output for readability
 
+# JWT Configuration (must match user-service secret key)
+application:
+  security:
+    jwt:
+      secret-key: barbershopBookingSystem2025SecretKeyForJWTTokenGenerationMustBe256BitsLongForHS256Algorithm
+
 # Optional tuning for virtual threads (Java 21 feature)
 threads:
   virtual:
@@ -27,3 +33,5 @@ server:
 logging:
   level:
     com.barbershop.shop_service: DEBUG  # Detailed logs for your package
+    org.springframework.security: DEBUG  # Enable Spring Security debug logging
+    org.springframework.security.oauth2: TRACE  # JWT validation details
