@@ -1,0 +1,155 @@
+/* shops.css - Styling for shop listing page */
+
+/* Shop Card Styling */
+.shop-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    border: 2px solid transparent;
+}
+
+.shop-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.15) !important;
+    border-color: var(--bs-primary);
+}
+
+.shop-card-border {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--bs-primary), var(--bs-info));
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.shop-card:hover .shop-card-border {
+    transform: scaleX(1);
+}
+
+/* Shop Icon */
+.shop-icon {
+    width: 50px;
+    height: 50px;
+    min-width: 50px;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+/* Shop Details */
+.shop-details {
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+}
+
+.shop-details i {
+    width: 20px;
+    text-align: center;
+    opacity: 0.6;
+}
+
+/* Search Bar Styling */
+.input-group-text {
+    border-right: none;
+}
+
+.input-group .form-control {
+    border-left: none;
+}
+
+.input-group .form-control:focus {
+    border-color: #ced4da;
+    box-shadow: none;
+}
+
+.input-group .form-control:focus + .input-group-text,
+.input-group-text:has(+ .form-control:focus) {
+    border-color: var(--bs-primary);
+}
+
+/* Empty State */
+.fa-store-alt-slash {
+    opacity: 0.3;
+}
+
+/* Loading State */
+#loadingState .spinner-border {
+    width: 3rem;
+    height: 3rem;
+}
+
+/* Card Title */
+.card-title {
+    color: var(--bs-dark);
+    font-size: 1.25rem;
+}
+
+/* Button Styling */
+.shop-card .btn-primary {
+    transition: all 0.3s ease;
+}
+
+.shop-card:hover .btn-primary {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+    transform: scale(1.02);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .shop-card {
+        margin-bottom: 1rem;
+    }
+
+    .shop-icon {
+        width: 40px;
+        height: 40px;
+        min-width: 40px;
+        font-size: 1.25rem;
+    }
+
+    .card-title {
+        font-size: 1.1rem;
+    }
+}
+
+/* Shop Count Badge */
+#shopCount {
+    font-weight: 600;
+    color: var(--bs-primary);
+}
+
+/* Pagination Styling */
+.pagination .page-link {
+    color: var(--bs-primary);
+    border-color: var(--bs-gray-300);
+}
+
+.pagination .page-item.active .page-link {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+}
+
+.pagination .page-link:hover {
+    background-color: rgba(var(--bs-primary-rgb), 0.1);
+    border-color: var(--bs-primary);
+}
+
+/* Smooth Transitions */
+.shop-card * {
+    transition: color 0.3s ease;
+}
+
+.shop-card:hover .text-muted {
+    color: var(--bs-gray-700) !important;
+}
+
+/* Footer Spacing */
+footer {
+    margin-top: auto;
+}
