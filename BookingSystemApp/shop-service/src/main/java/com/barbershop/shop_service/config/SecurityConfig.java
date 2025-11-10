@@ -36,8 +36,9 @@ public class SecurityConfig {
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/actuator/**").permitAll()
                 .requestMatchers("/api/test/**").permitAll() // Test endpoint
                 
-                // Shop endpoints - GET is public, POST/PUT/DELETE require authentication
-                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/shops", "/api/shops/**").permitAll()
+                // Shop endpoints - order matters! More specific rules first
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/shops/my-shops").authenticated() // Owner's shops
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/shops", "/api/shops/**").permitAll() // Public browsing
                 .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/shops").authenticated()
                 .requestMatchers(org.springframework.http.HttpMethod.PUT, "/api/shops/**").authenticated()
                 .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/shops/**").authenticated()

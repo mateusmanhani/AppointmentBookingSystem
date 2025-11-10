@@ -96,18 +96,52 @@ public class ShopController {
     }
 
     /**
+     * Get list of shops owned by the authenticated user.
+     * Example: GET /api/shops/my-shops
+     * Requires SHOP_OWNER role and valid JWT token.
+     */
+    @PreAuthorize("hasRole('SHOP_OWNER')")
+    @GetMapping("/my-shops")
+    public ResponseEntity<?> getMyShops(org.springframework.security.core.Authentication authentication) {
+        Jwt jwt = (Jwt) authentication.getPrincipal();
+        Long currentUserId = jwt.getClaim("userId");
+
+        java.util.List<Shop> myShops = shopService.getShopsByOwnerId(currentUserId);
+        java.util.List<ShopResponseDto> responseDtos = myShops.stream()
+            .map(shop -> new ShopResponseDto(
+                shop.getId(), shop.getName(), shop.getAddress(), shop.getOwnerId(),
+                shop.getLatitude(), shop.getLongitude(), shop.getCreatedAt(), shop.getUpdatedAt()))
+            .toList();
+
+        return ResponseEntity.ok(responseDtos);
+    }
+
+    /**
      * Update a shop by id using UpdateShopDTO.
-     * Returns 200 OK with updated shop or 404 Not Found when the shop does not exist.
+     * Returns 200 OK with updated shop, 404 Not Found when the shop does not exist,
+     * or 403 Forbidden if the user is not the owner of the shop.
      */
     @PreAuthorize("hasRole('SHOP_OWNER')")
     @PutMapping("/{id}")
     public ResponseEntity<ShopResponseDto> updateShop(
             @PathVariable Long id,
-            @Valid @RequestBody ShopUpdateDto dto) {
+            @Valid @RequestBody ShopUpdateDto dto,
+            org.springframework.security.core.Authentication authentication) {
 
+        // Get the authenticated user's ID from JWT
+        Jwt jwt = (Jwt) authentication.getPrincipal();
+        Long currentUserId = jwt.getClaim("userId");
+
+        // Check if shop exists
         Optional<Shop> maybe = shopService.getShopById(id);
         if (maybe.isEmpty()) {
             return ResponseEntity.notFound().build();
+        }
+
+        // Verify ownership - only the owner can update their shop
+        Shop shop = maybe.get();
+        if (!shop.getOwnerId().equals(currentUserId)) {
+            return ResponseEntity.status(403).build(); // Forbidden
         }
 
         Shop updated = shopService.updateFromDto(id, dto);
@@ -120,16 +154,32 @@ public class ShopController {
 
     /**
      * Delete a shop by id.
-     * Returns 204 No Content when deleted, 404 Not Found when not present.
+     * Returns 204 No Content when deleted, 404 Not Found when not present,
+     * or 403 Forbidden if the user is not the owner of the shop.
      */
     @PreAuthorize("hasRole('SHOP_OWNER')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteShop(@PathVariable Long id) {
-        boolean deleted = shopService.deleteById(id);
-        if (deleted) {
-            return ResponseEntity.noContent().build();
-        } else {
+    public ResponseEntity<?> deleteShop(
+            @PathVariable Long id,
+            org.springframework.security.core.Authentication authentication) {
+        
+        // Get the authenticated user's ID from JWT
+        Jwt jwt = (Jwt) authentication.getPrincipal();
+        Long currentUserId = jwt.getClaim("userId");
+
+        // Check if shop exists
+        Optional<Shop> maybe = shopService.getShopById(id);
+        if (maybe.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
+
+        // Verify ownership - only the owner can delete their shop
+        Shop shop = maybe.get();
+        if (!shop.getOwnerId().equals(currentUserId)) {
+            return ResponseEntity.status(403).build(); // Forbidden
+        }
+
+        shopService.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 }

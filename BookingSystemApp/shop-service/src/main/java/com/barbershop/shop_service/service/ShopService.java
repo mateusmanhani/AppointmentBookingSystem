@@ -50,6 +50,12 @@ public class ShopService {
         return shopRepository.findAll(pageable);
     }
 
+    /* Get shops by owner ID */
+    public java.util.List<Shop> getShopsByOwnerId(Long ownerId) {
+        log.info("Fetching shops for owner with id: {}", ownerId);
+        return shopRepository.findByOwnerId(ownerId);
+    }
+
     /* Update from DTO */
     public Shop updateFromDto(Long id, com.barbershop.shop_service.dto.ShopUpdateDto dto) {
         Shop shop = shopRepository.findById(id).orElseThrow();
