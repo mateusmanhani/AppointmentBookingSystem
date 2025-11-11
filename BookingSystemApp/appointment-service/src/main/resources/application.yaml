@@ -1,7 +1,6 @@
 spring:
   application:
-    name: shop-service
-
+    name: appointment-service
   datasource:
     url: jdbc:mysql://localhost:3306/shop_service_db
     username: barbershop_user
@@ -21,12 +20,3 @@ application:
   security:
     jwt:
       secret-key: barbershopBookingSystem2025SecretKeyForJWTTokenGenerationMustBe256BitsLongForHS256Algorithm
-
-server:
-  port: 8082                 
-
-logging:
-  level:
-    com.barbershop.shop_service: DEBUG  # Detailed logs for your package
-    org.springframework.security: DEBUG  # Enable Spring Security debug logging
-    org.springframework.security.oauth2: TRACE  # JWT validation details

@@ -18,6 +18,7 @@
         <module>user-service</module>
         <module>FrontendApplication</module>
         <module>shop-service</module>
+        <module>appointment-service</module>
     </modules>
 
     <properties>
