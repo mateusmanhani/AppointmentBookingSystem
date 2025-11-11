@@ -5,8 +5,8 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  GITHUB_USERNAME: mateusmanhani   # Your actual GitHub username
-  GITHUB_PAT: $(githubPat)          # Secret PAT variable stored in Azure DevOps
+  GITHUB_USERNAME: mateusmanhani  
+  GITHUB_PAT: $(githubPat)         
 
 steps:
 - checkout: self
