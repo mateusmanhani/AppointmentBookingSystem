@@ -5,19 +5,33 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  GITHUB_USERNAME: mateusmanhani  
-  GITHUB_PAT: $(githubPat)         
+  GITHUB_USERNAME: mateusmanhani   # your GitHub username
 
 steps:
 - checkout: self
   persistCredentials: true
 
-- script: |
-    git config user.email "mateus.manhani.dias@gmail.com"
-    git config user.name "$(GITHUB_USERNAME)"
+- bash: |
+    set -euo pipefail
+    echo "Remotes:"; git remote -v
+    echo "Repo status: ref=$(git rev-parse --abbrev-ref HEAD) sha=$(git rev-parse --short HEAD)"
 
-    git remote add github https://mateusmanhani:$(GITHUB_PAT)@github.com/mateusmanhani/AppointmentBookingSystem.git
+    # Ensure the 'github' remote points to the correct repo (remove if exists, then add)
+    git remote remove github 2>/dev/null || true
+    git remote add github "https://${GITHUB_USERNAME}:${GITHUB_PAT}@github.com/mateusmanhani/AppointmentBookingSystem.git"
 
-    git push github --all
+    # Fetch remote heads (optional but helps diagnostics)
+    git fetch github +refs/heads/*:refs/remotes/github/* || true
+
+    # Explicitly push current HEAD to main to avoid detached HEAD issues
+    git push github HEAD:refs/heads/main
+
+    # Optional: push tags if your pipeline creates any
     git push github --tags
+
+    echo "Remote heads after push:"
+    git ls-remote --heads github
   displayName: 'Push code to GitHub'
+  env:
+    GITHUB_USERNAME: $(GITHUB_USERNAME)
+    GITHUB_PAT: $(githubPat)   # define this as a secret variable in the pipeline UI
