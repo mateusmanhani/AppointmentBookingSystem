@@ -5,19 +5,36 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  GITHUB_USERNAME: mateusmanhani   # Your actual GitHub username
-  GITHUB_PAT: $(githubPat)          # Secret PAT variable stored in Azure DevOps
+  GITHUB_USERNAME: mateusmanhani
 
 steps:
 - checkout: self
   persistCredentials: true
+  fetchDepth: 0   # full history prevents missing-object/index-pack errors [web:88]
 
-- script: |
+- bash: |
+    set -euo pipefail
+    echo "Remotes:"; git remote -v
+    echo "Ref: $(git rev-parse --abbrev-ref HEAD) SHA: $(git rev-parse --short HEAD)"
+
+    # Configure identity (optional but nice for audit)
     git config user.email "mateus.manhani.dias@gmail.com"
-    git config user.name "$(GITHUB_USERNAME)"
+    git config user.name "${GITHUB_USERNAME}"
 
-    git remote add github https://mateusmanhani:$(GITHUB_PAT)@github.com/mateusmanhani/AppointmentBookingSystem.git
+    # Ensure 'github' remote points to your repo
+    git remote remove github 2>/dev/null || true
+    git remote add github "https://${GITHUB_USERNAME}:${GITHUB_PAT}@github.com/mateusmanhani/AppointmentBookingSystem.git"
 
-    git push github --all
-    git push github --tags
-  displayName: 'Push code to GitHub'
+    # Fetch for visibility and safe leasing
+    git fetch github +refs/heads/*:refs/remotes/github/* || true
+
+    # Overwrite only the main branch on GitHub with the current commit
+    git push --force-with-lease github HEAD:refs/heads/main
+
+    # Diagnostics
+    echo "Remote heads after push:"
+    git ls-remote --heads github
+  displayName: 'Push only main to GitHub (force overwrite)'
+  env:
+    GITHUB_USERNAME: $(GITHUB_USERNAME)
+    GITHUB_PAT: $(githubPat)   # secret variable defined in pipeline UI
