@@ -5,33 +5,36 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  GITHUB_USERNAME: mateusmanhani   # your GitHub username
+  GITHUB_USERNAME: mateusmanhani
 
 steps:
 - checkout: self
   persistCredentials: true
+  fetchDepth: 0   # full history prevents missing-object/index-pack errors [web:88]
 
 - bash: |
     set -euo pipefail
     echo "Remotes:"; git remote -v
-    echo "Before push: ref=$(git rev-parse --abbrev-ref HEAD) sha=$(git rev-parse --short HEAD)"
+    echo "Ref: $(git rev-parse --abbrev-ref HEAD) SHA: $(git rev-parse --short HEAD)"
 
-    # Ensure the 'github' remote points to the correct repo
+    # Configure identity (optional but nice for audit)
+    git config user.email "mateus.manhani.dias@gmail.com"
+    git config user.name "${GITHUB_USERNAME}"
+
+    # Ensure 'github' remote points to your repo
     git remote remove github 2>/dev/null || true
     git remote add github "https://${GITHUB_USERNAME}:${GITHUB_PAT}@github.com/mateusmanhani/AppointmentBookingSystem.git"
 
-    # Fetch remote heads for visibility and lease safety
+    # Fetch for visibility and safe leasing
     git fetch github +refs/heads/*:refs/remotes/github/* || true
 
-    # Overwrite GitHub main with the current commit from this pipeline
+    # Overwrite only the main branch on GitHub with the current commit
     git push --force-with-lease github HEAD:refs/heads/main
 
-    # Optional: mirror tags as well; force to overwrite tag refs if needed
-    git push --force --tags github || true
-
-    echo "After push, remote heads:"
+    # Diagnostics
+    echo "Remote heads after push:"
     git ls-remote --heads github
-  displayName: 'Push code to GitHub (mirror main)'
+  displayName: 'Push only main to GitHub (force overwrite)'
   env:
     GITHUB_USERNAME: $(GITHUB_USERNAME)
-    GITHUB_PAT: $(githubPat)   # define this as a secret variable in the pipeline UI
+    GITHUB_PAT: $(githubPat)   # secret variable defined in pipeline UI
