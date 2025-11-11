@@ -14,24 +14,24 @@ steps:
 - bash: |
     set -euo pipefail
     echo "Remotes:"; git remote -v
-    echo "Repo status: ref=$(git rev-parse --abbrev-ref HEAD) sha=$(git rev-parse --short HEAD)"
+    echo "Before push: ref=$(git rev-parse --abbrev-ref HEAD) sha=$(git rev-parse --short HEAD)"
 
-    # Ensure the 'github' remote points to the correct repo (remove if exists, then add)
+    # Ensure the 'github' remote points to the correct repo
     git remote remove github 2>/dev/null || true
     git remote add github "https://${GITHUB_USERNAME}:${GITHUB_PAT}@github.com/mateusmanhani/AppointmentBookingSystem.git"
 
-    # Fetch remote heads (optional but helps diagnostics)
+    # Fetch remote heads for visibility and lease safety
     git fetch github +refs/heads/*:refs/remotes/github/* || true
 
-    # Explicitly push current HEAD to main to avoid detached HEAD issues
-    git push github HEAD:refs/heads/main
+    # Overwrite GitHub main with the current commit from this pipeline
+    git push --force-with-lease github HEAD:refs/heads/main
 
-    # Optional: push tags if your pipeline creates any
-    git push github --tags
+    # Optional: mirror tags as well; force to overwrite tag refs if needed
+    git push --force --tags github || true
 
-    echo "Remote heads after push:"
+    echo "After push, remote heads:"
     git ls-remote --heads github
-  displayName: 'Push code to GitHub'
+  displayName: 'Push code to GitHub (mirror main)'
   env:
     GITHUB_USERNAME: $(GITHUB_USERNAME)
     GITHUB_PAT: $(githubPat)   # define this as a secret variable in the pipeline UI
