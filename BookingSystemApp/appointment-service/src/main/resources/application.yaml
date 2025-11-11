@@ -1,8 +1,11 @@
+server:
+  port: 8083  # Appointment service runs on port 8083
+
 spring:
   application:
     name: appointment-service
   datasource:
-    url: jdbc:mysql://localhost:3306/shop_service_db
+    url: jdbc:mysql://localhost:3306/appointment_db  # Changed to appointment_db
     username: barbershop_user
     password: barbershop_pass123
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -20,3 +23,10 @@ application:
   security:
     jwt:
       secret-key: barbershopBookingSystem2025SecretKeyForJWTTokenGenerationMustBe256BitsLongForHS256Algorithm
+  
+  # External service URLs
+  services:
+    shop-service:
+      url: http://localhost:8082  # Shop service for fetching shop/service/employee data
+    user-service:
+      url: http://localhost:8081  # User service for fetching customer data
