@@ -5,7 +5,7 @@ spring:
   application:
     name: appointment-service
   datasource:
-    url: jdbc:mysql://localhost:3306/appointment_db  # Changed to appointment_db
+    url: jdbc:mysql://localhost:3306/appointment_service_db  # Changed to appointment_db
     username: barbershop_user
     password: barbershop_pass123
     driver-class-name: com.mysql.cj.jdbc.Driver

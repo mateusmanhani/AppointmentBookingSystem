@@ -143,7 +143,7 @@ public class ShopServiceClient {
     }
 
     /**
-     * DEBUGGING TIP:
+     * DEBUGGING:
      * If you see log messages like "Fetching shop 5 from...", it's NOT using cache.
      * If you DON'T see these messages, cache is working! ✅
      * 
