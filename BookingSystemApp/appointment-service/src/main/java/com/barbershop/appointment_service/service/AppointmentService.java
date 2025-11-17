@@ -15,6 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -65,17 +66,24 @@ public class AppointmentService {
         }
         log.debug("Shop validated: {}", shop.name());
         
-        // ===== STEP 2: Validate service exists =====
+        // ===== STEP 2: Validate service exists and fetch duration =====
         log.debug("Validating service with ID: {}", request.serviceId());
-    ServiceDto service = shopServiceClient.getService(request.shopId(), request.serviceId());
+        ServiceDto service = shopServiceClient.getService(request.shopId(), request.serviceId());
         if (service == null) {
             log.error("Service not found: {}", request.serviceId());
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, 
                 "Service with ID " + request.serviceId() + " not found");
         }
-    log.debug("Service validated: {}", service.name());
+        log.debug("Service validated: {} (duration: {} min)", service.name(), service.duration());
         
-        // ===== STEP 3: Validate appointmentDateTime is in the future =====
+        // ===== STEP 3: Validate service duration is available =====
+        if (service.duration() == null || service.duration() <= 0) {
+            log.error("Service {} has invalid duration: {}", service.id(), service.duration());
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                "Service has invalid duration configured");
+        }
+        
+        // ===== STEP 4: Validate appointmentDateTime is in the future =====
         // Additional check beyond @Future validation (in case it was skipped)
         LocalDateTime now = LocalDateTime.now();
         if (request.appointmentDateTime().isBefore(now)) {
@@ -84,8 +92,32 @@ public class AppointmentService {
                 "Appointment date/time must be in the future");
         }
         log.debug("Date/time validated: {}", request.appointmentDateTime());
+        
+        // ===== STEP 5: Validate appointment doesn't extend past closing time =====
+        // Parse shop closing time
+        LocalTime closingTime;
+        try {
+            closingTime = LocalTime.parse(shop.closingTime());
+        } catch (DateTimeParseException e) {
+            log.error("Shop {} has invalid closing time: {}", shop.id(), shop.closingTime());
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                "Shop has invalid closing time configured");
+        }
+        
+        // Calculate appointment end time (start time + service duration)
+        LocalTime appointmentTime = request.appointmentDateTime().toLocalTime().truncatedTo(ChronoUnit.MINUTES);
+        LocalTime appointmentEndTime = appointmentTime.plusMinutes(service.duration());
+        
+        // Appointment must end before or at closing time
+        if (appointmentEndTime.isAfter(closingTime)) {
+            log.error("Appointment for service {} ({} min) starting at {} would end at {} (past closing time {})",
+                service.name(), service.duration(), appointmentTime, appointmentEndTime, closingTime);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                "Selected time slot is too late. This service would extend past shop closing time (" + closingTime + ")");
+        }
+        log.debug("Appointment end time {} validated (within closing time {})", appointmentEndTime, closingTime);
 
-        // ===== STEP 4: Build appointment entity (split LocalDateTime into date + time) =====
+        // ===== STEP 6: Build appointment entity (split LocalDateTime into date + time) =====
         Appointment appointment = new Appointment();
         appointment.setCustomerId(customerId);  // From JWT token
         appointment.setShopId(request.shopId());
@@ -113,11 +145,15 @@ public class AppointmentService {
         }
         // Persist date and time separately (entity stores LocalDate + LocalTime)
         appointment.setAppointmentDate(request.appointmentDateTime().toLocalDate());
-        // Truncate seconds/nanos for consistency with 30-min slot granularity
+        // Truncate seconds/nanos for consistency with 15-min slot granularity
         LocalTime timeOnly = request.appointmentDateTime().toLocalTime().truncatedTo(ChronoUnit.MINUTES);
         appointment.setAppointmentTime(timeOnly);
         appointment.setStatus(AppointmentStatus.PENDING);  // New appointments start as PENDING
         appointment.setNotes(request.notes());
+        
+        // Store service duration for availability calculations (snapshot pattern)
+        appointment.setServiceDuration(service.duration());
+        log.debug("Stored service duration: {} minutes", service.duration());
         
         // Save to database (createdAt/updatedAt set automatically by @CreationTimestamp)
         Appointment savedAppointment = appointmentRepository.save(appointment);
@@ -186,24 +222,47 @@ public class AppointmentService {
         log.debug("Enriching appointment ID: {}", appointment.getId());
         
         // ===== Fetch customer details from user-service =====
-        UserDto customer = userServiceClient.getUser(appointment.getCustomerId());
-    log.debug("Customer fetched: {}", customer != null ? customer.email() : "null");
+        UserDto customer = null;
+        try {
+            customer = userServiceClient.getUser(appointment.getCustomerId());
+            log.debug("Customer fetched: {}", customer != null ? customer.email() : "null");
+        } catch (Exception e) {
+            log.error("Failed to fetch customer {} for appointment {}: {}", 
+                appointment.getCustomerId(), appointment.getId(), e.getMessage());
+        }
         
         // ===== Fetch shop details from shop-service =====
-        ShopDto shop = shopServiceClient.getShop(appointment.getShopId());
-    log.debug("Shop fetched: {}", shop != null ? shop.name() : "null");
+        ShopDto shop = null;
+        try {
+            shop = shopServiceClient.getShop(appointment.getShopId());
+            log.debug("Shop fetched: {}", shop != null ? shop.name() : "null");
+        } catch (Exception e) {
+            log.error("Failed to fetch shop {} for appointment {}: {}", 
+                appointment.getShopId(), appointment.getId(), e.getMessage());
+        }
         
         // ===== Fetch service details from shop-service =====
-        ServiceDto service = shopServiceClient.getService(appointment.getShopId(), appointment.getServiceId());
-    log.debug("Service fetched: {}", service != null ? service.name() : "null");
+        ServiceDto service = null;
+        try {
+            service = shopServiceClient.getService(appointment.getShopId(), appointment.getServiceId());
+            log.debug("Service fetched: {}", service != null ? service.name() : "null");
+        } catch (Exception e) {
+            log.error("Failed to fetch service {} for shop {} for appointment {}: {}", 
+                appointment.getServiceId(), appointment.getShopId(), appointment.getId(), e.getMessage());
+        }
         
         // ===== Fetch employee details (if assigned) =====
         EmployeeDto employee = null;
         String employeeName = null;
         if (appointment.getEmployeeId() != null) {
-            employee = shopServiceClient.getEmployee(appointment.getShopId(), appointment.getEmployeeId());
-            employeeName = employee != null ? employee.name() : null;
-            log.debug("Employee fetched: {}", employeeName);
+            try {
+                employee = shopServiceClient.getEmployee(appointment.getShopId(), appointment.getEmployeeId());
+                employeeName = employee != null ? employee.name() : null;
+                log.debug("Employee fetched: {}", employeeName);
+            } catch (Exception e) {
+                log.error("Failed to fetch employee {} for shop {} for appointment {}: {}", 
+                    appointment.getEmployeeId(), appointment.getShopId(), appointment.getId(), e.getMessage());
+            }
         }
         
         // ===== Build complete response DTO =====

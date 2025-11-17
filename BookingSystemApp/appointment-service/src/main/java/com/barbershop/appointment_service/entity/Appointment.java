@@ -99,6 +99,14 @@ public class Appointment {
     @Column(name = "notes", columnDefinition = "TEXT")
     private String notes;
 
+    /**
+     * Duration of the service in minutes at the time of booking.
+     * Stored as snapshot to preserve historical accuracy even if service duration changes.
+     * Used for overlap detection and scheduling.
+     */
+    @Column(name = "service_duration_minutes")
+    private Integer serviceDuration;
+
     // ===== AUDIT FIELDS =====
 
     /**
@@ -204,6 +212,14 @@ public class Appointment {
 
     public void setNotes(String notes) {
         this.notes = notes;
+    }
+
+    public Integer getServiceDuration() {
+        return serviceDuration;
+    }
+
+    public void setServiceDuration(Integer serviceDuration) {
+        this.serviceDuration = serviceDuration;
     }
 
     public LocalDateTime getCreatedAt() {

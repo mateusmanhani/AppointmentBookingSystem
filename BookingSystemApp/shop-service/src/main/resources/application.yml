@@ -16,6 +16,11 @@ spring:
       hibernate:
         format_sql: true        # Formats SQL output for readability
 
+  sql:
+    init:
+      mode: always  # Dynamic loading: data resets on every restart with current dates (perfect for testing/demos)
+      continue-on-error: false
+
 # JWT Configuration (must match user-service secret key)
 application:
   security:

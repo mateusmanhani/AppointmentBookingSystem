@@ -45,6 +45,15 @@ public class ServiceService {
     }
     
     /**
+     * Get a service by its ID (without shop context).
+     * Used by other microservices that only have serviceId.
+     */
+    public Optional<ShopService> getServiceById(Long serviceId) {
+        log.info("Fetching service by id: {}", serviceId);
+        return serviceRepository.findById(serviceId);
+    }
+    
+    /**
      * Get a specific service by id and shopId.
      */
     public Optional<ShopService> getServiceByIdAndShopId(Long serviceId, Long shopId) {

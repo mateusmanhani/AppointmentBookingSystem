@@ -3,6 +3,7 @@ package com.barbershop.appointment_service.client;
 import com.barbershop.appointment_service.dto.EmployeeDto;
 import com.barbershop.appointment_service.dto.ServiceDto;
 import com.barbershop.appointment_service.dto.ShopDto;
+import com.barbershop.appointment_service.dto.ShopServiceDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -104,6 +105,35 @@ public class ShopServiceClient {
 
         } catch (RestClientException e) {
             log.error("Failed to fetch service {} for shop {}: {}", serviceId, shopId, e.getMessage());
+            throw new RuntimeException("Unable to fetch service details. Shop service may be unavailable.", e);
+        }
+    }
+
+    /**
+     * Get service details by ID directly (without shop context).
+     * Used for fetching service duration when checking availability and creating bookings.
+     * 
+     * @param serviceId The service ID
+     * @return ShopServiceDto with service details including duration
+     * @throws RuntimeException if service doesn't exist or service is down
+     */
+    @Cacheable(value = "services", key = "#serviceId")
+    public ShopServiceDto getService(Long serviceId) {
+        try {
+            String url = shopServiceUrl + "/api/services/" + serviceId;
+            log.debug("Fetching service {} from: {}", serviceId, url);
+            
+            ShopServiceDto service = restTemplate.getForObject(url, ShopServiceDto.class);
+            
+            if (service == null) {
+                throw new RuntimeException("Service not found: " + serviceId);
+            }
+            
+            log.debug("Successfully fetched service: {} (duration: {} min)", service.name(), service.duration());
+            return service;
+            
+        } catch (RestClientException e) {
+            log.error("Failed to fetch service {}: {}", serviceId, e.getMessage());
             throw new RuntimeException("Unable to fetch service details. Shop service may be unavailable.", e);
         }
     }

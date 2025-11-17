@@ -13,6 +13,10 @@ spring:
     properties:
       hibernate:
         format_sql: true
+  sql:
+    init:
+      mode: always  # Dynamic loading: data resets on every restart with current dates (perfect for testing/demos)
+      continue-on-error: false
   threads:
     virtual:
       enabled: true

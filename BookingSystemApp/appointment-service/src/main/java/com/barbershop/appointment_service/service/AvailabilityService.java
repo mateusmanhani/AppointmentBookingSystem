@@ -16,7 +16,6 @@ import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -41,7 +40,7 @@ public class AvailabilityService {
     private final ShopServiceClient shopServiceClient;
 
     // Constants for slot generation
-    private static final int SLOT_DURATION_MINUTES = 30;  // Each slot is 30 minutes
+    private static final int SLOT_DURATION_MINUTES = 15;  // Slot granularity: 15 minutes
 
     /**
      * Get available time slots for a shop on a specific date.
@@ -112,26 +111,41 @@ public class AvailabilityService {
             log.debug("Found {} existing appointments (all employees)", existingAppointments.size());
         }
         
-        // Create a Set of booked times for fast lookup
-        // Set = no duplicates, O(1) lookup time vs O(n) for List
-        Set<LocalTime> bookedTimes = existingAppointments.stream()
-            .map(Appointment::getAppointmentTime)
-            .collect(Collectors.toSet());
+        // Create time ranges for all booked appointments (start time -> end time)
+        // Each appointment blocks time from startTime to (startTime + serviceDuration)
+        log.debug("Building appointment time ranges...");
         
-        log.debug("Booked times: {}", bookedTimes);
+        List<AppointmentTimeRange> bookedRanges = existingAppointments.stream()
+            .map(apt -> {
+                LocalTime start = apt.getAppointmentTime();
+                // Use stored service duration (snapshot pattern)
+                Integer duration = apt.getServiceDuration();
+                if (duration == null) {
+                    log.warn("Appointment {} has null duration, defaulting to 30 minutes", apt.getId());
+                    duration = 30;  // Fallback for old appointments without duration
+                }
+                LocalTime end = start.plusMinutes(duration);
+                log.trace("Appointment {}: {} to {} ({} min)", apt.getId(), start, end, duration);
+                return new AppointmentTimeRange(start, end);
+            })
+            .collect(Collectors.toList());
+        
+        log.debug("Created {} appointment time ranges", bookedRanges.size());
         
         // ===== STEP 5: Mark each slot as available or booked =====
         List<TimeSlotDto> slots = new ArrayList<>();
         
-        for (LocalTime time : allTimeSlots) {
-            if (bookedTimes.contains(time)) {
-                // This time slot already has an appointment for this employee
-                slots.add(TimeSlotDto.booked(time));
-                log.trace("Slot {} - BOOKED{}", time, employeeId != null ? " (employee)" : "");
+        for (LocalTime slotTime : allTimeSlots) {
+            // Check if this 15-minute slot overlaps with ANY existing appointment
+            boolean isOverlapping = bookedRanges.stream()
+                .anyMatch(range -> slotOverlaps(slotTime, range));
+            
+            if (isOverlapping) {
+                slots.add(TimeSlotDto.booked(slotTime));
+                log.trace("Slot {} - BOOKED (overlaps with appointment)", slotTime);
             } else {
-                // This time slot is free (for employee or generally)
-                slots.add(TimeSlotDto.available(time));
-                log.trace("Slot {} - AVAILABLE{}", time, employeeId != null ? " (employee)" : "");
+                slots.add(TimeSlotDto.available(slotTime));
+                log.trace("Slot {} - AVAILABLE", slotTime);
             }
         }
         
@@ -143,6 +157,36 @@ public class AvailabilityService {
         
         return slots;
     }
+    
+    /**
+     * Check if a time slot overlaps with an appointment's time range.
+     * A 15-minute slot is considered overlapping if it falls within the appointment duration.
+     * 
+     * Example:
+     * - Appointment: 10:00 - 10:45 (45 minutes)
+     * - Slot 10:00: OVERLAPS (starts within appointment)
+     * - Slot 10:15: OVERLAPS (falls within appointment)
+     * - Slot 10:30: OVERLAPS (falls within appointment)
+     * - Slot 10:45: AVAILABLE (appointment ends, this slot is free)
+     * 
+     * Logic: slot overlaps if slot >= appointment.start AND slot < appointment.end
+     * 
+     * @param slotTime The time slot to check (e.g., 10:15)
+     * @param range The appointment's time range (start to end)
+     * @return true if the slot overlaps with the appointment
+     */
+    private boolean slotOverlaps(LocalTime slotTime, AppointmentTimeRange range) {
+        // Slot is blocked if it starts within the appointment duration
+        // Using !isBefore handles both "equals" and "after" cases for start
+        // Using isBefore (not isAfter) means we DON'T block the exact end time
+        return !slotTime.isBefore(range.start()) && slotTime.isBefore(range.end());
+    }
+    
+    /**
+     * Simple record to represent an appointment's time range.
+     * Used for overlap detection when checking slot availability.
+     */
+    private record AppointmentTimeRange(LocalTime start, LocalTime end) {}
 
     /**
      * HELPER METHOD: Generate time slots between opening and closing time.
