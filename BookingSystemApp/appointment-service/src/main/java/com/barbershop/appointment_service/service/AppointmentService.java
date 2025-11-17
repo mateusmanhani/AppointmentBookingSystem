@@ -15,7 +15,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -91,7 +90,27 @@ public class AppointmentService {
         appointment.setCustomerId(customerId);  // From JWT token
         appointment.setShopId(request.shopId());
         appointment.setServiceId(request.serviceId());
-        appointment.setEmployeeId(null);  // MVP: No employee selection yet
+        // If employeeId provided, validate it belongs to the same shop and set it
+        if (request.employeeId() != null) {
+            try {
+                var employee = shopServiceClient.getEmployee(request.shopId(), request.employeeId());
+                if (employee == null) {
+                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Employee not found: " + request.employeeId());
+                }
+                // Ownership already checked inside client; but double-check defensively
+                if (employee.shopId() != null && !request.shopId().equals(employee.shopId())) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Employee does not belong to the selected shop");
+                }
+                appointment.setEmployeeId(request.employeeId());
+            } catch (ResponseStatusException ex) {
+                throw ex;
+            } catch (Exception ex) {
+                log.error("Error validating employee {}: {}", request.employeeId(), ex.getMessage());
+                throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Unable to validate employee");
+            }
+        } else {
+            appointment.setEmployeeId(null);
+        }
         // Persist date and time separately (entity stores LocalDate + LocalTime)
         appointment.setAppointmentDate(request.appointmentDateTime().toLocalDate());
         // Truncate seconds/nanos for consistency with 30-min slot granularity
@@ -182,7 +201,7 @@ public class AppointmentService {
         EmployeeDto employee = null;
         String employeeName = null;
         if (appointment.getEmployeeId() != null) {
-            employee = shopServiceClient.getEmployee(appointment.getEmployeeId());
+            employee = shopServiceClient.getEmployee(appointment.getShopId(), appointment.getEmployeeId());
             employeeName = employee != null ? employee.name() : null;
             log.debug("Employee fetched: {}", employeeName);
         }
@@ -222,5 +241,123 @@ public class AppointmentService {
             // Audit
             appointment.getCreatedAt()
         );
+    }
+
+    /**
+     * Cancel an appointment owned by the given customer.
+     * Rules:
+     * - Appointment must exist and belong to the customer
+     * - Appointment must be in the future
+     * - Only pending or confirmed can be cancelled
+     */
+    @Transactional
+    public AppointmentResponseDto cancelAppointment(Long appointmentId, Long customerId) {
+        log.info("Customer {} requests cancellation of appointment {}", customerId, appointmentId);
+
+        Appointment appt = appointmentRepository.findById(appointmentId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Appointment not found"));
+
+        if (!appt.getCustomerId().equals(customerId)) {
+            log.warn("Customer {} attempted to cancel appointment {} they do not own", customerId, appointmentId);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not have permission to cancel this appointment");
+        }
+
+        // Combine date and time for comparison
+        LocalDateTime apptDateTime = LocalDateTime.of(appt.getAppointmentDate(), appt.getAppointmentTime());
+        if (apptDateTime.isBefore(LocalDateTime.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot cancel past appointments");
+        }
+
+        if (appt.getStatus() == AppointmentStatus.CANCELLED) {
+            // Idempotent: already cancelled
+            log.info("Appointment {} already cancelled", appointmentId);
+            return enrichAppointment(appt);
+        }
+
+        if (!(appt.getStatus() == AppointmentStatus.PENDING || appt.getStatus() == AppointmentStatus.CONFIRMED)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only pending or confirmed appointments can be cancelled");
+        }
+
+        appt.setStatus(AppointmentStatus.CANCELLED);
+        Appointment saved = appointmentRepository.save(appt);
+        log.info("Appointment {} cancelled by customer {}", appointmentId, customerId);
+        return enrichAppointment(saved);
+    }
+
+    /**
+     * Reschedule an existing appointment.
+     */
+    @Transactional
+    public AppointmentResponseDto rescheduleAppointment(Long appointmentId, Long customerId, AppointmentRescheduleRequestDto request) {
+        log.info("Customer {} requests reschedule of appointment {} to {} (employeeId={})",
+            customerId, appointmentId, request.newDateTime(), request.employeeId());
+
+        Appointment appt = appointmentRepository.findById(appointmentId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Appointment not found"));
+
+        if (!appt.getCustomerId().equals(customerId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not have permission to modify this appointment");
+        }
+
+        // Validate new date/time
+        if (request.newDateTime().isBefore(LocalDateTime.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "New appointment time must be in the future");
+        }
+
+        // Validate employee (if provided)
+        Long newEmployeeId = request.employeeId();
+        if (newEmployeeId != null) {
+            try {
+                var employee = shopServiceClient.getEmployee(appt.getShopId(), newEmployeeId);
+                if (employee == null) {
+                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Employee not found: " + newEmployeeId);
+                }
+                if (employee.shopId() != null && !appt.getShopId().equals(employee.shopId())) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Employee does not belong to the selected shop");
+                }
+            } catch (ResponseStatusException ex) {
+                throw ex;
+            } catch (Exception ex) {
+                log.error("Error validating employee {}: {}", newEmployeeId, ex.getMessage());
+                throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Unable to validate employee");
+            }
+        }
+
+        // Check conflicts
+        var newDate = request.newDateTime().toLocalDate();
+        var newTime = request.newDateTime().toLocalTime().truncatedTo(ChronoUnit.MINUTES);
+        boolean conflict;
+        if (newEmployeeId != null) {
+            conflict = appointmentRepository.existsActiveByShopDateTimeEmployeeExcludingId(
+                appt.getShopId(), newDate, newTime, newEmployeeId, appt.getId());
+        } else {
+            conflict = appointmentRepository.existsActiveByShopAndDateTimeExcludingId(
+                appt.getShopId(), newDate, newTime, appt.getId());
+        }
+        if (conflict) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Selected time slot is no longer available");
+        }
+
+        // Apply changes
+        appt.setAppointmentDate(newDate);
+        appt.setAppointmentTime(newTime);
+        appt.setEmployeeId(newEmployeeId);
+        if (request.notes() != null) {
+            appt.setNotes(request.notes());
+        }
+
+        Appointment saved = appointmentRepository.save(appt);
+        log.info("Appointment {} rescheduled successfully", appointmentId);
+        return enrichAppointment(saved);
+    }
+
+    @Transactional(readOnly = true)
+    public AppointmentResponseDto getAppointmentForCustomer(Long appointmentId, Long customerId) {
+        Appointment appt = appointmentRepository.findById(appointmentId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Appointment not found"));
+        if (!appt.getCustomerId().equals(customerId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not have permission to view this appointment");
+        }
+        return enrichAppointment(appt);
     }
 }

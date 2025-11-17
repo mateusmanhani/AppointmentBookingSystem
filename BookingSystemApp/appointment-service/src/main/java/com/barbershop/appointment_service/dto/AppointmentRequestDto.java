@@ -18,6 +18,13 @@ public record AppointmentRequestDto(
     @NotNull(message = "Service ID is required")
     Long serviceId,
 
+    /**
+     * Optional employee preference. If provided, the appointment will be linked
+     * to this employee (validated against the shop). If null, any available
+     * employee may perform the service.
+     */
+    Long employeeId,
+
     @NotNull(message = "Appointment date/time is required")
     @Future(message = "Appointment date/time must be in the future")
     LocalDateTime appointmentDateTime,
@@ -25,5 +32,5 @@ public record AppointmentRequestDto(
     String notes  // Optional - customer can add special requests
 ) {
     // customerId is extracted from JWT token (not in request body)
-    // employeeId can be null for now (any available employee)
+    // employeeId can be null (any available employee)
 }

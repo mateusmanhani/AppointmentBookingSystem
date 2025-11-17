@@ -117,28 +117,34 @@ public class ShopServiceClient {
      * @return EmployeeDto with employee details (name, role), or null if employeeId is null
      * @throws RuntimeException if employee doesn't exist or service is down
      */
-    @Cacheable(value = "employees", key = "#employeeId", unless = "#employeeId == null")
-    public EmployeeDto getEmployee(Long employeeId) {
+    @Cacheable(value = "employees", key = "#shopId + '-' + #employeeId", unless = "#employeeId == null")
+    public EmployeeDto getEmployee(Long shopId, Long employeeId) {
         if (employeeId == null) {
             log.debug("Employee ID is null, returning null (any available employee)");
             return null;
         }
-        
+
         try {
-            String url = shopServiceUrl + "/api/employees/" + employeeId;
-            log.debug("Fetching employee {} from: {}", employeeId, url);
-            
+            // Correct endpoint includes shop context
+            String url = shopServiceUrl + "/api/shops/" + shopId + "/employees/" + employeeId;
+            log.debug("Fetching employee {} for shop {} from: {}", employeeId, shopId, url);
+
             EmployeeDto employee = restTemplate.getForObject(url, EmployeeDto.class);
-            
+
             if (employee == null) {
-                throw new RuntimeException("Employee not found: " + employeeId);
+                throw new RuntimeException("Employee not found: " + employeeId + " for shop " + shopId);
             }
-            
-            log.debug("Successfully fetched employee: {}", employee.name());
+
+            // Defensive: ensure ownership matches
+            if (employee.shopId() != null && !employee.shopId().equals(shopId)) {
+                throw new RuntimeException("Employee " + employeeId + " does not belong to shop " + shopId);
+            }
+
+            log.debug("Successfully fetched employee: {} (shop {})", employee.name(), shopId);
             return employee;
-            
+
         } catch (RestClientException e) {
-            log.error("Failed to fetch employee {}: {}", employeeId, e.getMessage());
+            log.error("Failed to fetch employee {} for shop {}: {}", employeeId, shopId, e.getMessage());
             throw new RuntimeException("Unable to fetch employee details. Shop service may be unavailable.", e);
         }
     }

@@ -2,6 +2,7 @@ package com.barbershop.appointment_service.controller;
 
 import com.barbershop.appointment_service.dto.AppointmentRequestDto;
 import com.barbershop.appointment_service.dto.AppointmentResponseDto;
+import com.barbershop.appointment_service.dto.AppointmentRescheduleRequestDto;
 import com.barbershop.appointment_service.dto.TimeSlotDto;
 import com.barbershop.appointment_service.service.AppointmentService;
 import com.barbershop.appointment_service.service.AvailabilityService;
@@ -61,6 +62,7 @@ public class AppointmentController {
     * {
     *   "shopId": 5,
     *   "serviceId": 10,
+    *   "employeeId": 42, // optional
     *   "appointmentDateTime": "2025-11-15T14:00:00",
     *   "notes": "Please use organic products"
     * }
@@ -194,20 +196,73 @@ public class AppointmentController {
     @GetMapping("/availability/shop/{shopId}/date/{date}")
     public ResponseEntity<List<TimeSlotDto>> getAvailability(
         @PathVariable Long shopId,
-        @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
+        @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+        @RequestParam(name = "employeeId", required = false) Long employeeId
     ) {
-        log.info("Checking availability for shop {} on {}", shopId, date);
-        
-        // Call availability service to generate slots
-        List<TimeSlotDto> slots = availabilityService.getAvailableSlots(shopId, date);
-        
-        log.info("Found {} time slots for shop {} on {} ({} available)", 
+        log.info("Checking availability for shop {} on {} (employeeId={})", shopId, date, employeeId);
+
+        // Call availability service to generate slots (optionally filtered by employee)
+        List<TimeSlotDto> slots = availabilityService.getAvailableSlots(shopId, date, employeeId);
+
+        log.info("Found {} time slots for shop {} on {} ({} available, employeeId={})", 
             slots.size(), 
             shopId, 
             date,
-            slots.stream().filter(TimeSlotDto::available).count());
-        
+            slots.stream().filter(TimeSlotDto::available).count(),
+            employeeId);
+
         return ResponseEntity.ok(slots);  // 200 OK
+    }
+
+    /**
+     * CANCEL APPOINTMENT
+     * Endpoint: PUT /api/appointments/{id}/cancel
+     * Access: CUSTOMER role only (must own the appointment)
+     */
+    @PutMapping("/appointments/{id}/cancel")
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public ResponseEntity<AppointmentResponseDto> cancelAppointment(
+        @PathVariable("id") Long appointmentId,
+        @AuthenticationPrincipal Jwt jwt
+    ) {
+        Long customerId = jwt.getClaim("userId");
+        log.info("Customer {} cancelling appointment {}", customerId, appointmentId);
+        AppointmentResponseDto result = appointmentService.cancelAppointment(appointmentId, customerId);
+        return ResponseEntity.ok(result);
+    }
+
+    /**
+     * RESCHEDULE APPOINTMENT
+     * Endpoint: PUT /api/appointments/{id}/reschedule
+     * Access: CUSTOMER role only (must own the appointment)
+     */
+    @PutMapping("/appointments/{id}/reschedule")
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public ResponseEntity<AppointmentResponseDto> rescheduleAppointment(
+        @PathVariable("id") Long appointmentId,
+        @Valid @RequestBody AppointmentRescheduleRequestDto request,
+        @AuthenticationPrincipal Jwt jwt
+    ) {
+        Long customerId = jwt.getClaim("userId");
+        log.info("Customer {} rescheduling appointment {}", customerId, appointmentId);
+        AppointmentResponseDto result = appointmentService.rescheduleAppointment(appointmentId, customerId, request);
+        return ResponseEntity.ok(result);
+    }
+
+    /**
+     * GET SINGLE APPOINTMENT (for edit mode prefill)
+     * Endpoint: GET /api/appointments/{id}
+     * Access: CUSTOMER role only (must own the appointment)
+     */
+    @GetMapping("/appointments/{id}")
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public ResponseEntity<AppointmentResponseDto> getAppointmentById(
+        @PathVariable("id") Long appointmentId,
+        @AuthenticationPrincipal Jwt jwt
+    ) {
+        Long customerId = jwt.getClaim("userId");
+        AppointmentResponseDto appt = appointmentService.getAppointmentForCustomer(appointmentId, customerId);
+        return ResponseEntity.ok(appt);
     }
 
     /**

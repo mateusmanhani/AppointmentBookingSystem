@@ -12,30 +12,6 @@
     box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
 }
 
-/* Mini Calendar */
-.mini-calendar {
-    background: #f8f9fa;
-    border: 1px solid #e9ecef;
-}
-
-.mini-day {
-    padding: 8px 4px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 500;
-    transition: all 0.2s ease;
-}
-
-.mini-day:hover {
-    background: #e9ecef;
-}
-
-.mini-day.active {
-    background: #007bff;
-    color: white;
-}
-
 /* Time Slots */
 .time-slot {
     padding: 12px 8px;

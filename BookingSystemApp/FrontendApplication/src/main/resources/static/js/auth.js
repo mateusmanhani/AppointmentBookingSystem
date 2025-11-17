@@ -1,7 +1,6 @@
 // Complete auth.js file - Replace your entire auth.js with this
 
-// Configuration
-const CONFIG = {
+window.CONFIG = window.CONFIG || {
     API_BASE_URL: 'http://localhost:8081',
     TOKEN_KEY: 'barberbook_token',
     USER_KEY: 'barberbook_user'
@@ -9,7 +8,7 @@ const CONFIG = {
 
 // Utility function for API calls
 async function apiCall(endpoint, options = {}) {
-    const token = localStorage.getItem(CONFIG.TOKEN_KEY);
+    const token = localStorage.getItem(window.CONFIG.TOKEN_KEY);
 
     const config = {
         headers: {
@@ -21,7 +20,7 @@ async function apiCall(endpoint, options = {}) {
     };
 
     try {
-        const response = await fetch(`${CONFIG.API_BASE_URL}${endpoint}`, config);
+    const response = await fetch(`${window.CONFIG.API_BASE_URL}${endpoint}`, config);
 
         const contentType = response.headers.get('content-type');
         let data;
@@ -126,8 +125,8 @@ async function handleLogin(event) {
 
         console.log('Login successful:', data);
 
-        localStorage.setItem(CONFIG.TOKEN_KEY, data.accessToken);
-        localStorage.setItem(CONFIG.USER_KEY, JSON.stringify(data.user));
+    localStorage.setItem(window.CONFIG.TOKEN_KEY, data.accessToken);
+    localStorage.setItem(window.CONFIG.USER_KEY, JSON.stringify(data.user));
 
         showMessage('loginMessage', 'Login successful! Redirecting...', 'success');
 

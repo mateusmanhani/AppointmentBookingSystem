@@ -1,7 +1,7 @@
 // frontend/src/main/resources/static/js/app.js
 
-// Configuration
-const CONFIG = {
+
+window.CONFIG = window.CONFIG || {
     API_BASE_URL: 'http://localhost:8081/api',
     FRONTEND_URL: 'http://localhost:8080',
     TOKEN_KEY: 'barberbook_token',
@@ -10,7 +10,7 @@ const CONFIG = {
 
 // Utility function for API calls with JWT authentication
 async function apiCall(endpoint, options = {}) {
-    const token = localStorage.getItem(CONFIG.TOKEN_KEY);
+    const token = localStorage.getItem(window.CONFIG.TOKEN_KEY);
 
     const config = {
         headers: {
@@ -22,7 +22,7 @@ async function apiCall(endpoint, options = {}) {
     };
 
     try {
-        const response = await fetch(`${CONFIG.API_BASE_URL}${endpoint}`, config);
+    const response = await fetch(`${window.CONFIG.API_BASE_URL}${endpoint}`, config);
 
         // Handle different content types
         const contentType = response.headers.get('content-type');
@@ -90,7 +90,7 @@ function showMessage(elementId, message, type = 'danger') {
 
 // Get current user info
 function getCurrentUser() {
-    const userStr = localStorage.getItem(CONFIG.USER_KEY);
+    const userStr = localStorage.getItem(window.CONFIG.USER_KEY);
     return userStr ? JSON.parse(userStr) : null;
 }
 

@@ -59,4 +59,47 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
         @Param("shopId") Long shopId,
         @Param("date") LocalDate date
     );
+
+    /**
+     * Find active appointments for a shop and employee on a specific date.
+     * Used for employee-specific availability filtering.
+     */
+    @Query("SELECT a FROM Appointment a WHERE a.shopId = :shopId " +
+           "AND a.appointmentDate = :date " +
+           "AND a.employeeId = :employeeId " +
+           "AND a.status IN ('PENDING', 'CONFIRMED') " +
+           "ORDER BY a.appointmentTime ASC")
+    List<Appointment> findActiveAppointmentsByShopAndDateAndEmployee(
+        @Param("shopId") Long shopId,
+        @Param("date") LocalDate date,
+        @Param("employeeId") Long employeeId
+    );
+
+    // ===== CONFLICT CHECKS (for rescheduling) =====
+
+    @Query("SELECT COUNT(a) > 0 FROM Appointment a WHERE a.shopId = :shopId " +
+           "AND a.appointmentDate = :date " +
+           "AND a.appointmentTime = :time " +
+           "AND a.status IN ('PENDING', 'CONFIRMED') " +
+           "AND a.id <> :excludeId")
+    boolean existsActiveByShopAndDateTimeExcludingId(
+        @Param("shopId") Long shopId,
+        @Param("date") LocalDate date,
+        @Param("time") java.time.LocalTime time,
+        @Param("excludeId") Long excludeId
+    );
+
+    @Query("SELECT COUNT(a) > 0 FROM Appointment a WHERE a.shopId = :shopId " +
+           "AND a.appointmentDate = :date " +
+           "AND a.appointmentTime = :time " +
+           "AND a.employeeId = :employeeId " +
+           "AND a.status IN ('PENDING', 'CONFIRMED') " +
+           "AND a.id <> :excludeId")
+    boolean existsActiveByShopDateTimeEmployeeExcludingId(
+        @Param("shopId") Long shopId,
+        @Param("date") LocalDate date,
+        @Param("time") java.time.LocalTime time,
+        @Param("employeeId") Long employeeId,
+        @Param("excludeId") Long excludeId
+    );
 }

@@ -210,27 +210,58 @@ class Dashboard {
             const loadingElement = document.getElementById('appointmentsLoading');
             const noAppointmentsElement = document.getElementById('noAppointments');
 
-            // Simulate loading delay
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            loadingElement.classList.remove('d-none');
+            appointmentsContainer.innerHTML = '';
+            noAppointmentsElement.classList.add('d-none');
+
+            // Fetch appointments from API
+            const token = localStorage.getItem('barberbook_token');
+            const response = await fetch('http://localhost:8083/api/appointments/my-appointments', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to load appointments');
+            }
+
+            this.appointments = await response.json();
+            console.log('Loaded appointments:', this.appointments);
 
             // Hide loading
             loadingElement.classList.add('d-none');
 
-            // For now, simulate empty appointments
-            const appointments = []; // Empty for now
-
-            if (appointments.length === 0) {
+            if (this.appointments.length === 0) {
                 noAppointmentsElement.classList.remove('d-none');
                 this.updateStats(0, 0);
             } else {
-                this.renderAppointments(appointments);
-                this.updateStats(appointments);
+                this.renderAppointments(this.appointments);
+                this.calculateAndUpdateStats();
             }
 
         } catch (error) {
             console.error('Error loading appointments:', error);
+            document.getElementById('appointmentsLoading').classList.add('d-none');
             this.showError('Failed to load appointments');
         }
+    }
+
+    calculateAndUpdateStats() {
+        const now = new Date();
+        let upcoming = 0;
+        let completed = 0;
+
+        this.appointments.forEach(apt => {
+            const aptDate = new Date(`${apt.appointmentDate}T${apt.appointmentTime}`);
+            if (aptDate > now && (apt.status === 'PENDING' || apt.status === 'CONFIRMED')) {
+                upcoming++;
+            } else if (apt.status === 'COMPLETED') {
+                completed++;
+            }
+        });
+
+        this.updateStats(upcoming, completed);
     }
 
     async fetchUserAppointments() {
@@ -246,14 +277,138 @@ class Dashboard {
 
     renderAppointments(appointments) {
         const container = document.getElementById('appointmentsList');
+        container.innerHTML = '';
 
-        if (appointments.length === 0) {
-            document.getElementById('noAppointments').classList.remove('d-none');
+        appointments.forEach(appointment => {
+            const appointmentCard = this.createAppointmentCard(appointment);
+            container.appendChild(appointmentCard);
+        });
+    }
+
+    createAppointmentCard(appointment) {
+        const card = document.createElement('div');
+        card.className = 'col-md-6 col-lg-4 mb-3';
+
+        // Format date
+        const dateObj = new Date(`${appointment.appointmentDate}T${appointment.appointmentTime}`);
+        const formattedDate = dateObj.toLocaleDateString('en-US', { 
+            weekday: 'short', 
+            year: 'numeric', 
+            month: 'short', 
+            day: 'numeric' 
+        });
+        const formattedTime = appointment.appointmentTime; // Already in HH:mm format
+
+        // Get status badge class and text
+        const statusInfo = this.getStatusBadge(appointment.status, dateObj);
+
+        card.innerHTML = `
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 class="card-title mb-0">${appointment.shopName || 'Shop'}</h5>
+                        <span class="badge ${statusInfo.class}">${statusInfo.text}</span>
+                    </div>
+                    
+                    <h6 class="text-muted mb-3">${appointment.serviceName || 'Service'}</h6>
+                    
+                    <div class="appointment-details">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-calendar-event me-2 text-primary"></i>
+                            <span>${formattedDate}</span>
+                        </div>
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-clock me-2 text-primary"></i>
+                            <span>${formattedTime}</span>
+                        </div>
+                        ${appointment.employeeName ? `
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-person me-2 text-primary"></i>
+                            <span>${appointment.employeeName}</span>
+                        </div>
+                        ` : ''}
+                        ${appointment.price ? `
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-currency-euro me-2 text-primary"></i>
+                            <span><strong>€${appointment.price.toFixed(2)}</strong></span>
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+                
+                ${this.shouldShowActions(appointment.status, dateObj) ? `
+                <div class="card-footer bg-transparent">
+                    <button class="btn btn-sm btn-outline-primary me-2" onclick="dashboard.goToReschedule(${appointment.id}, ${appointment.shopId}, ${appointment.serviceId})">
+                        <i class="bi bi-arrow-repeat me-1"></i>Reschedule
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="dashboard.cancelAppointment(${appointment.id})">
+                        <i class="bi bi-x-circle me-1"></i>Cancel
+                    </button>
+                </div>
+                ` : ''}
+            </div>
+        `;
+
+        return card;
+    }
+
+    getStatusBadge(status, dateObj) {
+        const now = new Date();
+        
+        switch(status) {
+            case 'PENDING':
+                return { class: 'bg-warning text-dark', text: 'Pending' };
+            case 'CONFIRMED':
+                if (dateObj < now) {
+                    return { class: 'bg-secondary', text: 'Past' };
+                }
+                return { class: 'bg-success', text: 'Confirmed' };
+            case 'COMPLETED':
+                return { class: 'bg-info', text: 'Completed' };
+            case 'CANCELLED':
+                return { class: 'bg-danger', text: 'Cancelled' };
+            default:
+                return { class: 'bg-secondary', text: status };
+        }
+    }
+
+    shouldShowActions(status, dateObj) {
+        const now = new Date();
+        // Only show actions for future appointments that are pending or confirmed
+        return dateObj > now && (status === 'PENDING' || status === 'CONFIRMED');
+    }
+
+    async cancelAppointment(appointmentId) {
+        if (!confirm('Are you sure you want to cancel this appointment?')) {
             return;
         }
 
-        // TODO: Implement appointment rendering when appointments are available
-        container.innerHTML = '<p class="text-muted">No appointments to display</p>';
+        try {
+            const token = localStorage.getItem('barberbook_token');
+            const response = await fetch(`http://localhost:8083/api/appointments/${appointmentId}/cancel`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to cancel appointment');
+            }
+
+            this.showSuccess('Appointment cancelled successfully');
+            // Reload appointments
+            await this.loadUserAppointments();
+
+        } catch (error) {
+            console.error('Error cancelling appointment:', error);
+            this.showError('Failed to cancel appointment');
+        }
+    }
+
+    goToReschedule(appointmentId, shopId, serviceId) {
+        window.location.href = `booking.html?shopId=${encodeURIComponent(shopId)}&serviceId=${encodeURIComponent(serviceId)}&appointmentId=${encodeURIComponent(appointmentId)}&edit=true`;
     }
 
     updateStats(upcoming, completed) {
@@ -303,6 +458,24 @@ class Dashboard {
                 <i class="fas fa-exclamation-triangle me-2"></i>${message}
             </div>
         `;
+    }
+
+    showSuccess(message) {
+        // Create temporary success alert at the top of the page
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-success alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3';
+        alertDiv.style.zIndex = '9999';
+        alertDiv.innerHTML = `
+            <i class="bi bi-check-circle me-2"></i>${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+        document.body.appendChild(alertDiv);
+
+        // Auto dismiss after 3 seconds
+        setTimeout(() => {
+            alertDiv.classList.remove('show');
+            setTimeout(() => alertDiv.remove(), 150);
+        }, 3000);
     }
 }
 

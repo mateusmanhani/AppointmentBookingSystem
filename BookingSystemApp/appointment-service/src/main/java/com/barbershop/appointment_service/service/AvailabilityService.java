@@ -57,8 +57,8 @@ public class AvailabilityService {
      * @param date The date to check availability
      * @return List of time slots with availability status
      */
-    public List<TimeSlotDto> getAvailableSlots(Long shopId, LocalDate date) {
-        log.info("Checking availability for shop {} on {}", shopId, date);
+    public List<TimeSlotDto> getAvailableSlots(Long shopId, LocalDate date, Long employeeId) {
+        log.info("Checking availability for shop {} on {} (employeeId={})", shopId, date, employeeId);
         
         // ===== STEP 1: Fetch shop details =====
         log.debug("Fetching shop details for shop ID: {}", shopId);
@@ -99,12 +99,18 @@ public class AvailabilityService {
         log.debug("Generated {} time slots", allTimeSlots.size());
         
         // ===== STEP 4: Find existing appointments for this date =====
-        log.debug("Checking for existing appointments on {}", date);
-        
-        List<Appointment> existingAppointments = appointmentRepository
-            .findActiveAppointmentsByShopAndDate(shopId, date);
-        
-        log.debug("Found {} existing appointments", existingAppointments.size());
+        log.debug("Checking for existing appointments on {} (employee filter: {})", date, employeeId != null);
+
+        List<Appointment> existingAppointments;
+        if (employeeId != null) {
+            existingAppointments = appointmentRepository
+                .findActiveAppointmentsByShopAndDateAndEmployee(shopId, date, employeeId);
+            log.debug("Found {} existing appointments for employee {}", existingAppointments.size(), employeeId);
+        } else {
+            existingAppointments = appointmentRepository
+                .findActiveAppointmentsByShopAndDate(shopId, date);
+            log.debug("Found {} existing appointments (all employees)", existingAppointments.size());
+        }
         
         // Create a Set of booked times for fast lookup
         // Set = no duplicates, O(1) lookup time vs O(n) for List
@@ -119,20 +125,21 @@ public class AvailabilityService {
         
         for (LocalTime time : allTimeSlots) {
             if (bookedTimes.contains(time)) {
-                // This time slot already has an appointment
+                // This time slot already has an appointment for this employee
                 slots.add(TimeSlotDto.booked(time));
-                log.trace("Slot {} - BOOKED", time);
+                log.trace("Slot {} - BOOKED{}", time, employeeId != null ? " (employee)" : "");
             } else {
-                // This time slot is free
+                // This time slot is free (for employee or generally)
                 slots.add(TimeSlotDto.available(time));
-                log.trace("Slot {} - AVAILABLE", time);
+                log.trace("Slot {} - AVAILABLE{}", time, employeeId != null ? " (employee)" : "");
             }
         }
         
-        log.info("Availability check complete: {} total slots, {} available, {} booked", 
+        log.info("Availability check complete: {} total slots, {} available, {} booked (employeeId={})", 
             slots.size(), 
             slots.stream().filter(TimeSlotDto::available).count(),
-            slots.stream().filter(s -> !s.available()).count());
+            slots.stream().filter(s -> !s.available()).count(),
+            employeeId);
         
         return slots;
     }
