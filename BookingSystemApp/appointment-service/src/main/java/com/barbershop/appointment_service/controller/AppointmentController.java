@@ -53,18 +53,17 @@ public class AppointmentController {
      * 3. Call AppointmentService to create appointment
      * 4. Return 201 Created with appointment details
      * 
-     * EXAMPLE REQUEST:
-     * POST /api/appointments
-     * Authorization: Bearer <JWT_TOKEN>
-     * Content-Type: application/json
-     * 
-     * {
-     *   "shopId": 5,
-     *   "serviceId": 10,
-     *   "appointmentDate": "2025-11-15",
-     *   "appointmentTime": "14:00",
-     *   "notes": "Please use organic products"
-     * }
+    * EXAMPLE REQUEST :
+    * POST /api/appointments
+    * Authorization: Bearer <JWT_TOKEN>
+    * Content-Type: application/json
+    * 
+    * {
+    *   "shopId": 5,
+    *   "serviceId": 10,
+    *   "appointmentDateTime": "2025-11-15T14:00:00",
+    *   "notes": "Please use organic products"
+    * }
      * 
      * EXAMPLE RESPONSE (201 Created):
      * {

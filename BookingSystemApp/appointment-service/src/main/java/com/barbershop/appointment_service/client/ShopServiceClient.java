@@ -86,23 +86,24 @@ public class ShopServiceClient {
      * @return ServiceDto with service details (name, price, duration)
      * @throws RuntimeException if service doesn't exist or service is down
      */
-    @Cacheable(value = "services", key = "#serviceId")
-    public ServiceDto getService(Long serviceId) {
+    @Cacheable(value = "services", key = "#shopId + '-' + #serviceId")
+    public ServiceDto getService(Long shopId, Long serviceId) {
         try {
-            String url = shopServiceUrl + "/api/services/" + serviceId;
-            log.debug("Fetching service {} from: {}", serviceId, url);
-            
+            // Call the shop-service endpoint that includes the shopId
+            String url = shopServiceUrl + "/api/shops/" + shopId + "/services/" + serviceId;
+            log.debug("Fetching service {} for shop {} from: {}", serviceId, shopId, url);
+
             ServiceDto service = restTemplate.getForObject(url, ServiceDto.class);
-            
+
             if (service == null) {
-                throw new RuntimeException("Service not found: " + serviceId);
+                throw new RuntimeException("Service not found: " + serviceId + " for shop " + shopId);
             }
-            
-            log.debug("Successfully fetched service: {}", service.name());
+
+            log.debug("Successfully fetched service: {} (shop {})", service.name(), shopId);
             return service;
-            
+
         } catch (RestClientException e) {
-            log.error("Failed to fetch service {}: {}", serviceId, e.getMessage());
+            log.error("Failed to fetch service {} for shop {}: {}", serviceId, shopId, e.getMessage());
             throw new RuntimeException("Unable to fetch service details. Shop service may be unavailable.", e);
         }
     }

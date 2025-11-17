@@ -52,12 +52,31 @@ function proceedToPayment() {
         return;
     }
 
-    // Get appointment details
+
+    // Helper: convert 12-hour time (e.g. "7:30 PM") to 24-hour "HH:mm"
+    function to24Hour(time12) {
+        if (!time12) return null;
+        const m = time12.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
+        if (!m) return time12; // assume already HH:mm
+        let hh = parseInt(m[1], 10);
+        const mm = m[2];
+        const ampm = m[3] ? m[3].toUpperCase() : null;
+        if (ampm) {
+            if (ampm === 'PM' && hh !== 12) hh += 12;
+            if (ampm === 'AM' && hh === 12) hh = 0;
+        }
+        return String(hh).padStart(2, '0') + ':' + mm;
+    }
+
+    // Get appointment details and build ISO LocalDateTime string
+    const date = document.getElementById('appointmentDate').value; // YYYY-MM-DD
+    const time24 = to24Hour(selectedTime.dataset.time); // HH:mm
+    const appointmentDateTime = date + 'T' + time24 + ':00'; // e.g. 2025-11-17T19:30:00
+
     const appointmentData = {
         service: 'Haircut & Styling',
         employee: document.getElementById('employeeSelect').value,
-        date: document.getElementById('appointmentDate').value,
-        time: selectedTime.dataset.time,
+        appointmentDateTime: appointmentDateTime,
         price: 45.00
     };
 

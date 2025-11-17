@@ -13,8 +13,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -62,36 +64,39 @@ public class AppointmentService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, 
                 "Shop with ID " + request.shopId() + " not found");
         }
-        log.debug("Shop validated: {}", shop.getName());
+        log.debug("Shop validated: {}", shop.name());
         
         // ===== STEP 2: Validate service exists =====
         log.debug("Validating service with ID: {}", request.serviceId());
-        ServiceDto service = shopServiceClient.getService(request.serviceId());
+    ServiceDto service = shopServiceClient.getService(request.shopId(), request.serviceId());
         if (service == null) {
             log.error("Service not found: {}", request.serviceId());
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, 
                 "Service with ID " + request.serviceId() + " not found");
         }
-        log.debug("Service validated: {}", service.getName());
+    log.debug("Service validated: {}", service.name());
         
-        // ===== STEP 3: Validate date is in future =====
+        // ===== STEP 3: Validate appointmentDateTime is in the future =====
         // Additional check beyond @Future validation (in case it was skipped)
-        LocalDate today = LocalDate.now();
-        if (request.appointmentDate().isBefore(today)) {
-            log.error("Appointment date {} is in the past", request.appointmentDate());
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
-                "Appointment date must be in the future");
+        LocalDateTime now = LocalDateTime.now();
+        if (request.appointmentDateTime().isBefore(now)) {
+            log.error("Appointment date/time {} is in the past", request.appointmentDateTime());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                "Appointment date/time must be in the future");
         }
-        log.debug("Date validated: {}", request.appointmentDate());
-        
-        // ===== STEP 4: Create and save appointment entity =====
+        log.debug("Date/time validated: {}", request.appointmentDateTime());
+
+        // ===== STEP 4: Build appointment entity (split LocalDateTime into date + time) =====
         Appointment appointment = new Appointment();
         appointment.setCustomerId(customerId);  // From JWT token
         appointment.setShopId(request.shopId());
         appointment.setServiceId(request.serviceId());
         appointment.setEmployeeId(null);  // MVP: No employee selection yet
-        appointment.setAppointmentDate(request.appointmentDate());
-        appointment.setAppointmentTime(request.appointmentTime());
+        // Persist date and time separately (entity stores LocalDate + LocalTime)
+        appointment.setAppointmentDate(request.appointmentDateTime().toLocalDate());
+        // Truncate seconds/nanos for consistency with 30-min slot granularity
+        LocalTime timeOnly = request.appointmentDateTime().toLocalTime().truncatedTo(ChronoUnit.MINUTES);
+        appointment.setAppointmentTime(timeOnly);
         appointment.setStatus(AppointmentStatus.PENDING);  // New appointments start as PENDING
         appointment.setNotes(request.notes());
         
@@ -116,7 +121,7 @@ public class AppointmentService {
         log.info("Fetching appointments for customer: {}", customerId);
         
         List<Appointment> appointments = appointmentRepository
-            .findByCustomerIdOrderByAppointmentDateDesc(customerId);
+            .findByCustomerIdOrderByAppointmentDateDescAppointmentTimeDesc(customerId);
         
         log.debug("Found {} appointments for customer {}", appointments.size(), customerId);
         
@@ -138,7 +143,7 @@ public class AppointmentService {
         log.info("Fetching appointments for shop: {}", shopId);
         
         List<Appointment> appointments = appointmentRepository
-            .findByShopIdOrderByAppointmentDateDesc(shopId);
+            .findByShopIdOrderByAppointmentDateDescAppointmentTimeDesc(shopId);
         
         log.debug("Found {} appointments for shop {}", appointments.size(), shopId);
         
@@ -163,22 +168,22 @@ public class AppointmentService {
         
         // ===== Fetch customer details from user-service =====
         UserDto customer = userServiceClient.getUser(appointment.getCustomerId());
-        log.debug("Customer fetched: {}", customer != null ? customer.getEmail() : "null");
+    log.debug("Customer fetched: {}", customer != null ? customer.email() : "null");
         
         // ===== Fetch shop details from shop-service =====
         ShopDto shop = shopServiceClient.getShop(appointment.getShopId());
-        log.debug("Shop fetched: {}", shop != null ? shop.getName() : "null");
+    log.debug("Shop fetched: {}", shop != null ? shop.name() : "null");
         
         // ===== Fetch service details from shop-service =====
-        ServiceDto service = shopServiceClient.getService(appointment.getServiceId());
-        log.debug("Service fetched: {}", service != null ? service.getName() : "null");
+        ServiceDto service = shopServiceClient.getService(appointment.getShopId(), appointment.getServiceId());
+    log.debug("Service fetched: {}", service != null ? service.name() : "null");
         
         // ===== Fetch employee details (if assigned) =====
         EmployeeDto employee = null;
         String employeeName = null;
         if (appointment.getEmployeeId() != null) {
             employee = shopServiceClient.getEmployee(appointment.getEmployeeId());
-            employeeName = employee != null ? employee.getName() : null;
+            employeeName = employee != null ? employee.name() : null;
             log.debug("Employee fetched: {}", employeeName);
         }
         
@@ -194,21 +199,21 @@ public class AppointmentService {
             
             // Customer details
             appointment.getCustomerId(),
-            customer != null ? customer.getFirstName() + " " + customer.getLastName() : "Unknown Customer",
-            customer != null ? customer.getEmail() : null,
-            customer != null ? customer.getPhone() : null,
+            customer != null ? customer.getFullName() : "Unknown Customer",
+            customer != null ? customer.email() : null,
+            customer != null ? customer.phone() : null,
             
             // Shop details
             appointment.getShopId(),
-            shop != null ? shop.getName() : "Unknown Shop",
-            shop != null ? shop.getAddress() : null,
-            shop != null ? shop.getPhone() : null,
+            shop != null ? shop.name() : "Unknown Shop",
+            shop != null ? shop.address() : null,
+            shop != null ? shop.phone() : null,
             
             // Service details
             appointment.getServiceId(),
-            service != null ? service.getName() : "Unknown Service",
-            service != null ? service.getPrice() : null,
-            service != null ? service.getDuration() : null,
+            service != null ? service.name() : "Unknown Service",
+            service != null ? service.price() : null,
+            service != null ? service.duration() : null,
             
             // Employee details (can be null for MVP)
             appointment.getEmployeeId(),
