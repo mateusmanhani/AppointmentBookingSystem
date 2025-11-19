@@ -227,12 +227,40 @@ class BookingPageManager {
     renderTimeSlots(slots) {
         const container = document.querySelector('.time-slots-grid');
         container.innerHTML = '';
+        
         // Normalize slot format: support ["09:00","09:30"] or [{time:"09:00", available:true}, ...]
         const normalized = (slots || []).map(s => typeof s === 'string' ? ({ time: s, available: true }) : s);
-        const availableSlots = normalized.filter(s => s && (s.available === undefined ? true : !!s.available));
+        
+        // Filter out past slots if today is selected
+        const selectedDate = document.getElementById('appointmentDate').value;
+        const today = new Date().toISOString().split('T')[0];
+        const isToday = selectedDate === today;
+        
+        let relevantSlots = normalized;
+        if (isToday) {
+            const now = new Date();
+            const currentTime = now.getHours() * 60 + now.getMinutes();
+            
+            relevantSlots = normalized.filter(slot => {
+                const timeStr = slot.time;
+                if (!timeStr) return false;
+                
+                const [hours, minutes] = timeStr.split(':').map(Number);
+                const slotTime = hours * 60 + minutes;
+                return slotTime > currentTime; // Only future slots
+            });
+            
+            console.log(`Filtered ${normalized.length - relevantSlots.length} past time slots`);
+        }
+        
+        // Filter to only available slots
+        const availableSlots = relevantSlots.filter(s => s && (s.available === undefined ? true : !!s.available));
         
         if (availableSlots.length === 0) {
-            container.innerHTML = '<div class="col-12"><div class="alert alert-info">No available time slots for this date. Please select another date.</div></div>';
+            const message = isToday 
+                ? 'No available time slots remaining for today. Please select another date.'
+                : 'No available time slots for this date. Please select another date.';
+            container.innerHTML = `<div class="col-12"><div class="alert alert-info">${message}</div></div>`;
             return;
         }
 

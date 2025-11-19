@@ -51,12 +51,103 @@ INSERT INTO appointments (customer_id, shop_id, service_id, employee_id, appoint
 (31, 10, 46, 30, DATE_SUB(CURDATE(), INTERVAL 2 DAY), '10:30:00', 'COMPLETED', 'Espresso was perfect', 25, DATE_SUB(NOW(), INTERVAL 2 DAY), DATE_SUB(NOW(), INTERVAL 2 DAY)),
 (32, 11, 51, 33, DATE_SUB(CURDATE(), INTERVAL 1 DAY), '14:00:00', 'COMPLETED', 'Very distinguished service', 35, DATE_SUB(NOW(), INTERVAL 1 DAY), DATE_SUB(NOW(), INTERVAL 1 DAY));
 
--- Today's Appointments (Confirmed)
+-- Today's Appointments (Confirmed) - Spread throughout the day to show realistic availability
+-- Some shops are busier than others to demonstrate the color-coded map
 INSERT INTO appointments (customer_id, shop_id, service_id, employee_id, appointment_date, appointment_time, status, notes, service_duration_minutes, created_at, updated_at) VALUES
-(33, 12, 56, 37, CURDATE(), '09:00:00', 'CONFIRMED', 'First time at this shop', 25, DATE_SUB(NOW(), INTERVAL 1 DAY), DATE_SUB(NOW(), INTERVAL 1 DAY)),
-(34, 13, 61, 41, CURDATE(), '11:30:00', 'CONFIRMED', NULL, 30, DATE_SUB(NOW(), INTERVAL 1 DAY), DATE_SUB(NOW(), INTERVAL 1 DAY)),
-(35, 14, 66, 44, CURDATE(), '14:00:00', 'CONFIRMED', 'Regular customer', 25, DATE_SUB(NOW(), INTERVAL 2 DAY), DATE_SUB(NOW(), INTERVAL 2 DAY)),
-(16, 15, 71, 48, CURDATE(), '16:30:00', 'CONFIRMED', NULL, 35, NOW(), NOW());
+-- Shop 1: The Grafton Barber (VERY BUSY - mostly booked)
+(33, 1, 1, 1, CURDATE(), '09:00:00', 'CONFIRMED', 'Early morning cut', 30, DATE_SUB(NOW(), INTERVAL 2 DAY), DATE_SUB(NOW(), INTERVAL 2 DAY)),
+(16, 1, 2, 2, CURDATE(), '09:30:00', 'CONFIRMED', 'Regular customer', 40, DATE_SUB(NOW(), INTERVAL 2 DAY), DATE_SUB(NOW(), INTERVAL 2 DAY)),
+(17, 1, 1, 1, CURDATE(), '10:30:00', 'CONFIRMED', NULL, 30, DATE_SUB(NOW(), INTERVAL 1 DAY), DATE_SUB(NOW(), INTERVAL 1 DAY)),
+(18, 1, 3, 3, CURDATE(), '11:00:00', 'CONFIRMED', 'Styling for interview', 50, DATE_SUB(NOW(), INTERVAL 1 DAY), DATE_SUB(NOW(), INTERVAL 1 DAY)),
+(19, 1, 4, 2, CURDATE(), '12:00:00', 'CONFIRMED', 'Lunch break appointment', 45, NOW(), NOW()),
+(20, 1, 1, 1, CURDATE(), '13:00:00', 'CONFIRMED', NULL, 30, NOW(), NOW()),
+(21, 1, 2, 3, CURDATE(), '14:00:00', 'CONFIRMED', 'After work trim', 40, NOW(), NOW()),
+(22, 1, 5, 2, CURDATE(), '15:00:00', 'CONFIRMED', 'Full service package', 75, NOW(), NOW()),
+(23, 1, 1, 1, CURDATE(), '17:00:00', 'CONFIRMED', 'Evening appointment', 30, NOW(), NOW()),
+
+-- Shop 2: Northside Cuts (MODERATELY BUSY)
+(24, 2, 6, 4, CURDATE(), '09:00:00', 'CONFIRMED', 'Kids cut before school', 25, DATE_SUB(NOW(), INTERVAL 1 DAY), DATE_SUB(NOW(), INTERVAL 1 DAY)),
+(25, 2, 7, 5, CURDATE(), '10:00:00', 'CONFIRMED', 'Quick fade', 20, DATE_SUB(NOW(), INTERVAL 1 DAY), DATE_SUB(NOW(), INTERVAL 1 DAY)),
+(26, 2, 8, 6, CURDATE(), '11:30:00', 'CONFIRMED', NULL, 35, NOW(), NOW()),
+(27, 2, 10, 4, CURDATE(), '13:00:00', 'CONFIRMED', 'Father and son', 50, NOW(), NOW()),
+(28, 2, 9, 5, CURDATE(), '15:00:00', 'CONFIRMED', 'Quick head shave', 15, NOW(), NOW()),
+(29, 2, 7, 6, CURDATE(), '16:30:00', 'CONFIRMED', 'End of day cut', 20, NOW(), NOW()),
+
+-- Shop 3: Rathmines Barber Co. (MODERATE)
+(30, 3, 11, 7, CURDATE(), '10:00:00', 'CONFIRMED', 'Classic cut', 35, DATE_SUB(NOW(), INTERVAL 1 DAY), DATE_SUB(NOW(), INTERVAL 1 DAY)),
+(31, 3, 13, 8, CURDATE(), '11:00:00', 'CONFIRMED', 'Beard grooming', 45, NOW(), NOW()),
+(32, 3, 15, 9, CURDATE(), '14:00:00', 'CONFIRMED', 'Cut and beard combo', 60, NOW(), NOW()),
+(33, 3, 12, 7, CURDATE(), '16:00:00', 'CONFIRMED', NULL, 30, NOW(), NOW()),
+
+-- Shop 4: Ballsbridge Barbers (BUSY - premium shop)
+(34, 4, 16, 10, CURDATE(), '09:00:00', 'CONFIRMED', 'Executive cut', 30, DATE_SUB(NOW(), INTERVAL 2 DAY), DATE_SUB(NOW(), INTERVAL 2 DAY)),
+(35, 4, 18, 11, CURDATE(), '10:00:00', 'CONFIRMED', 'Deluxe styling', 40, DATE_SUB(NOW(), INTERVAL 1 DAY), DATE_SUB(NOW(), INTERVAL 1 DAY)),
+(16, 4, 20, 12, CURDATE(), '11:30:00', 'CONFIRMED', 'Royal shave treatment', 75, NOW(), NOW()),
+(17, 4, 19, 10, CURDATE(), '13:00:00', 'CONFIRMED', 'Business lunch meeting after', 45, NOW(), NOW()),
+(18, 4, 17, 11, CURDATE(), '14:30:00', 'CONFIRMED', NULL, 40, NOW(), NOW()),
+(19, 4, 16, 12, CURDATE(), '16:00:00', 'CONFIRMED', 'Evening appointment', 30, NOW(), NOW()),
+
+-- Shop 5: Temple Bar Barbers (LIGHT - tourist area, slower midweek)
+(20, 5, 21, 13, CURDATE(), '10:00:00', 'CONFIRMED', 'Tourist from USA', 30, NOW(), NOW()),
+(21, 5, 23, 14, CURDATE(), '14:00:00', 'CONFIRMED', 'Beard trim', 45, NOW(), NOW()),
+
+-- Shop 6: The Viking Barber (MODERATE)
+(22, 6, 26, 16, CURDATE(), '09:30:00', 'CONFIRMED', 'Student cut', 25, DATE_SUB(NOW(), INTERVAL 1 DAY), DATE_SUB(NOW(), INTERVAL 1 DAY)),
+(23, 6, 28, 17, CURDATE(), '11:00:00', 'CONFIRMED', 'Beard sculpting', 40, NOW(), NOW()),
+(24, 6, 30, 18, CURDATE(), '13:30:00', 'CONFIRMED', 'Premium package with beer', 75, NOW(), NOW()),
+(25, 6, 27, 16, CURDATE(), '15:30:00', 'CONFIRMED', NULL, 35, NOW(), NOW()),
+
+-- Shop 7: Dublin 2 Barbers (BUSY)
+(26, 7, 31, 19, CURDATE(), '09:00:00', 'CONFIRMED', 'Before work', 35, DATE_SUB(NOW(), INTERVAL 1 DAY), DATE_SUB(NOW(), INTERVAL 1 DAY)),
+(27, 7, 33, 20, CURDATE(), '10:00:00', 'CONFIRMED', 'Classic taper', 40, DATE_SUB(NOW(), INTERVAL 1 DAY), DATE_SUB(NOW(), INTERVAL 1 DAY)),
+(28, 7, 34, 21, CURDATE(), '11:30:00', 'CONFIRMED', 'Hair color', 55, NOW(), NOW()),
+(29, 7, 35, 22, CURDATE(), '13:00:00', 'CONFIRMED', 'Full grooming', 75, NOW(), NOW()),
+(30, 7, 32, 19, CURDATE(), '15:00:00', 'CONFIRMED', 'Student special', 30, NOW(), NOW()),
+(31, 7, 31, 20, CURDATE(), '16:30:00', 'CONFIRMED', NULL, 35, NOW(), NOW()),
+
+-- Shop 8: Sandymount Barber (LIGHT - coastal area)
+(32, 8, 36, 24, CURDATE(), '10:00:00', 'CONFIRMED', 'Sea view appointment', 30, NOW(), NOW()),
+(33, 8, 38, 25, CURDATE(), '15:00:00', 'CONFIRMED', 'Quick beard trim', 25, NOW(), NOW()),
+
+-- Shop 9: Portobello Cuts (MODERATE)
+(34, 9, 41, 27, CURDATE(), '09:30:00', 'CONFIRMED', 'Vintage style cut', 30, DATE_SUB(NOW(), INTERVAL 1 DAY), DATE_SUB(NOW(), INTERVAL 1 DAY)),
+(35, 9, 43, 28, CURDATE(), '11:00:00', 'CONFIRMED', 'Buzz cut', 20, NOW(), NOW()),
+(16, 9, 45, 29, CURDATE(), '13:00:00', 'CONFIRMED', 'Retro package', 60, NOW(), NOW()),
+(17, 9, 42, 27, CURDATE(), '15:00:00', 'CONFIRMED', NULL, 35, NOW(), NOW()),
+
+-- Shop 10: The Barista Barber (BUSY - trendy location)
+(18, 10, 46, 30, CURDATE(), '09:00:00', 'CONFIRMED', 'Coffee and cut', 25, DATE_SUB(NOW(), INTERVAL 1 DAY), DATE_SUB(NOW(), INTERVAL 1 DAY)),
+(19, 10, 48, 31, CURDATE(), '10:00:00', 'CONFIRMED', 'Espresso style cut', 40, NOW(), NOW()),
+(20, 10, 50, 32, CURDATE(), '11:30:00', 'CONFIRMED', 'Latte package', 50, NOW(), NOW()),
+(21, 10, 47, 30, CURDATE(), '13:00:00', 'CONFIRMED', 'Afternoon trim', 30, NOW(), NOW()),
+(22, 10, 49, 31, CURDATE(), '14:30:00', 'CONFIRMED', NULL, 45, NOW(), NOW()),
+(23, 10, 46, 32, CURDATE(), '16:00:00', 'CONFIRMED', 'Evening coffee cut', 25, NOW(), NOW()),
+
+-- Shop 11: Merrion Barbers (MODERATE - business district)
+(24, 11, 51, 33, CURDATE(), '10:00:00', 'CONFIRMED', 'Executive grooming', 35, NOW(), NOW()),
+(25, 11, 53, 34, CURDATE(), '12:00:00', 'CONFIRMED', 'Business lunch cut', 45, NOW(), NOW()),
+(26, 11, 55, 35, CURDATE(), '14:30:00', 'CONFIRMED', 'Signature package', 60, NOW(), NOW()),
+(27, 11, 52, 33, CURDATE(), '16:30:00', 'CONFIRMED', 'After work trim', 40, NOW(), NOW()),
+
+-- Shop 12: Phibsborough Barbers (LIGHT)
+(28, 12, 56, 37, CURDATE(), '11:00:00', 'CONFIRMED', 'Local resident', 25, NOW(), NOW()),
+(29, 12, 59, 39, CURDATE(), '15:00:00', 'CONFIRMED', 'Quick cut', 45, NOW(), NOW()),
+
+-- Shop 13: Coastal Cuts Clontarf (MODERATE)
+(30, 13, 61, 41, CURDATE(), '10:00:00', 'CONFIRMED', 'Seaside trim', 30, NOW(), NOW()),
+(31, 13, 63, 42, CURDATE(), '12:00:00', 'CONFIRMED', 'Coastal fade', 40, NOW(), NOW()),
+(32, 13, 65, 43, CURDATE(), '14:00:00', 'CONFIRMED', 'Beach package', 60, NOW(), NOW()),
+(33, 13, 62, 41, CURDATE(), '16:00:00', 'CONFIRMED', NULL, 35, NOW(), NOW()),
+
+-- Shop 14: Stoneybatter Cuts (MODERATE)
+(34, 14, 66, 44, CURDATE(), '09:00:00', 'CONFIRMED', 'Early bird special', 25, DATE_SUB(NOW(), INTERVAL 1 DAY), DATE_SUB(NOW(), INTERVAL 1 DAY)),
+(35, 14, 68, 46, CURDATE(), '11:00:00', 'CONFIRMED', 'Traditional Irish cut', 40, NOW(), NOW()),
+(16, 14, 70, 47, CURDATE(), '13:30:00', 'CONFIRMED', 'Heritage package', 50, NOW(), NOW()),
+(17, 14, 67, 45, CURDATE(), '15:30:00', 'CONFIRMED', 'Quick trim', 30, NOW(), NOW()),
+
+-- Shop 15: Dún Laoghaire Barbers (LIGHT - end of line)
+(18, 15, 71, 48, CURDATE(), '10:30:00', 'CONFIRMED', 'Harbor view cut', 35, NOW(), NOW()),
+(19, 15, 73, 49, CURDATE(), '14:00:00', 'CONFIRMED', 'Pier walk after', 45, NOW(), NOW());
 
 -- Tomorrow's Appointments (Confirmed & Pending)
 INSERT INTO appointments (customer_id, shop_id, service_id, employee_id, appointment_date, appointment_time, status, notes, service_duration_minutes, created_at, updated_at) VALUES

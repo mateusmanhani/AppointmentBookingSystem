@@ -23,6 +23,12 @@
             margin: 0;
         }
 
+        /* Navbar should be on top with white background */
+        #navbar {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
         .map-container {
             max-width: 1400px;
             margin: 20px auto;
@@ -176,11 +182,60 @@
             border-radius: 8px;
             font-weight: 600;
             transition: transform 0.2s;
+            text-decoration: none;
+            display: block;
+            text-align: center;
         }
 
         .btn-book-now:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+
+        .btn-directions {
+            width: 100%;
+            background: white;
+            border: 2px solid #4285f4;
+            color: #4285f4;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: block;
+            text-align: center;
+        }
+
+        .btn-directions:hover {
+            background: #4285f4;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(66, 133, 244, 0.4);
+        }
+
+        .btn-my-location {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            background: white;
+            border: 2px solid rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 10px 15px;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s;
+        }
+
+        .btn-my-location:hover {
+            background: #f8f9fa;
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .btn-my-location i {
+            font-size: 1.2rem;
         }
 
         .loading-overlay {
@@ -228,12 +283,21 @@
     <div class="map-container">
         <!-- Header -->
         <div class="map-header">
-            <h1><i class="fas fa-map-marked-alt"></i> Dublin Barbershops</h1>
-            <p>Find your nearest barbershop and check real-time availability</p>
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1><i class="fas fa-map-marked-alt"></i> Dublin Barbershops</h1>
+                    <p>Find your nearest barbershop and check real-time availability</p>
+                </div>
+                <button id="myLocationBtn" class="btn btn-outline-primary">
+                    <i class="fas fa-location-arrow me-2"></i>My Location
+                </button>
+            </div>
         </div>
 
         <!-- Map -->
-        <div id="map"></div>
+        <div style="position: relative;">
+            <div id="map"></div>
+        </div>
 
         <!-- Legend -->
         <div class="legend">

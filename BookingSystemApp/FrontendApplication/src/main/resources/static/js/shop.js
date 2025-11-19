@@ -47,6 +47,7 @@ class ShopPageManager {
             console.log('Shop loaded:', this.shop);
             
             this.renderShopHeader();
+            this.loadMapEmbed();
             
         } catch (error) {
             console.error('Error loading shop:', error);
@@ -137,6 +138,31 @@ class ShopPageManager {
             `;
             headerEl.appendChild(descriptionEl);
         }
+    }
+
+    loadMapEmbed() {
+        if (!this.shop || !this.shop.latitude || !this.shop.longitude) {
+            console.log('No coordinates available for map');
+            return;
+        }
+
+        const mapContainer = document.getElementById('shopMapEmbed');
+        if (!mapContainer) return;
+
+        // Create Google Maps embed URL
+        const mapUrl = `https://www.google.com/maps?q=${this.shop.latitude},${this.shop.longitude}&z=15&output=embed`;
+
+        // Create iframe element
+        mapContainer.innerHTML = `
+            <iframe
+                src="${mapUrl}"
+                loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade"
+                allowfullscreen>
+            </iframe>
+        `;
+
+        console.log('Map embed loaded for shop at:', this.shop.latitude, this.shop.longitude);
     }
 
     renderServices() {
@@ -355,12 +381,14 @@ function getDirections() {
     if (shopPageManager?.shop) {
         const address = [
             shopPageManager.shop.address,
-            shopPageManager.shop.city,
-            shopPageManager.shop.state,
-            shopPageManager.shop.zipCode
+            shopPageManager.shop.city || 'Dublin',
+            'Ireland'
         ].filter(Boolean).join(', ');
-        const encoded = encodeURIComponent(address);
-        window.open(`https://www.google.com/maps/search/${encoded}`, '_blank');
+        
+        // Use Google Maps Directions API for better routing with optional starting point
+        const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
+        
+        window.open(directionsUrl, '_blank');
     }
 }
 
