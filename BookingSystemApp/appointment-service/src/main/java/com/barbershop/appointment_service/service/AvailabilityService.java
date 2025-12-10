@@ -47,7 +47,7 @@ public class AvailabilityService {
      * 
      * WORKFLOW:
      * 1. Fetch shop details to get opening/closing hours
-     * 2. Generate all possible 30-minute time slots
+     * 2. Generate all possible 15-minute time slots
      * 3. Find existing appointments for that day
      * 4. Mark slots as available or booked
      * 5. Return complete list for frontend

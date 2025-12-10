@@ -81,7 +81,7 @@ function showMessage(elementId, message, type = 'danger') {
     }
 }
 
-// Handle Login - FIXED AND SIMPLIFIED
+// Handle Login
 async function handleLogin(event) {
     event.preventDefault();
     console.log('Login form submitted');
@@ -142,7 +142,7 @@ async function handleLogin(event) {
     }
 }
 
-// Handle Registration - FIXED WITH PHONE FIELD
+// Handle Registration
 async function handleRegistration(event) {
     event.preventDefault();
     console.log('Registration form submitted');
